@@ -24,6 +24,40 @@ if (API_KEYS.length === 0 || !API_KEYS[0]) {
   console.warn("WARNING: No GEMINI_API_KEY set. Create a .env file (see .env.example).");
 }
 
+// ── Webhook (must be before express.json middleware) ───────
+app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }), async (req, res) => {
+  if (!LEMON_WEBHOOK_SECRET) { console.log("Webhook received but no secret configured"); return res.sendStatus(200); }
+  try {
+    const hmac = crypto.createHmac("sha256", LEMON_WEBHOOK_SECRET);
+    hmac.update(req.body);
+    const signature = hmac.digest("hex");
+    if (req.headers["x-signature"] !== signature) { console.log("Webhook signature mismatch"); return res.sendStatus(401); }
+
+    const event = JSON.parse(req.body.toString());
+    console.log("LemonSqueezy webhook event:", event.meta?.event_name);
+    if (event.meta?.event_name === "order_created") {
+      const order = event.data;
+      const userId = order.attributes?.custom?.userId;
+      if (userId) {
+        const endDate = Date.now() + 30 * 24 * 60 * 60 * 1000;
+        db.prepare(`INSERT INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, created_at)
+          VALUES (?, 'subscriber', ?, ?, ?, ?)
+          ON CONFLICT(user_id) DO UPDATE SET tier = 'subscriber', lemon_order_id = ?, lemon_subscription_id = ?, current_period_end = ?`)
+          .run(userId, order.id, order.id, endDate, Date.now(), order.id, order.id, endDate);
+        console.log("Activated subscription for user:", userId);
+      }
+    }
+    if (event.meta?.event_name === "subscription_cancelled") {
+      const sub = event.data;
+      db.prepare("UPDATE subscriptions SET tier = 'free' WHERE lemon_subscription_id = ?").run(sub.id);
+    }
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("LemonSqueezy webhook error:", err);
+    res.sendStatus(200);
+  }
+});
+
 app.use(express.json({ limit: "5mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -439,37 +473,6 @@ app.post("/api/subscription/toggle-longer", (req, res) => {
   res.json({ longer_messages: newVal === 1 });
 });
 
-app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }), async (req, res) => {
-  if (!LEMON_WEBHOOK_SECRET) return res.sendStatus(200);
-  try {
-    const crypto = require("crypto");
-    const hmac = crypto.createHmac("sha256", LEMON_WEBHOOK_SECRET);
-    hmac.update(req.body);
-    const signature = hmac.digest("hex");
-    if (req.headers["x-signature"] !== signature) return res.sendStatus(401);
-
-    const event = JSON.parse(req.body.toString());
-    if (event.meta?.event_name === "order_created") {
-      const order = event.data;
-      const userId = order.attributes?.custom?.userId;
-      if (userId) {
-        const endDate = Date.now() + 30 * 24 * 60 * 60 * 1000;
-        db.prepare(`INSERT INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, created_at)
-          VALUES (?, 'subscriber', ?, ?, ?, ?)
-          ON CONFLICT(user_id) DO UPDATE SET tier = 'subscriber', lemon_order_id = ?, lemon_subscription_id = ?, current_period_end = ?`)
-          .run(userId, order.id, order.id, endDate, Date.now(), order.id, order.id, endDate);
-      }
-    }
-    if (event.meta?.event_name === "subscription_cancelled") {
-      const sub = event.data;
-      db.prepare("UPDATE subscriptions SET tier = 'free' WHERE lemon_subscription_id = ?").run(sub.id);
-    }
-    res.sendStatus(200);
-  } catch (err) {
-    console.error("LemonSqueezy webhook error:", err);
-    res.sendStatus(200);
-  }
-});
 
 // ── AI Character Generator ────────────────────────────────
 
