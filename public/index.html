@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SceneAI — where your characters are waiting</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="style.css">
+<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="logo.png" alt="SceneAI logo" class="brand-logo">
+        <div>
+          <h1 class="wordmark-sm">SceneAI</h1>
+          <p class="tag-sm">your own stage</p>
+        </div>
+      </div>
+
+      <div class="nav-vertical">
+        <button id="homeNavBtn" class="nav-btn active" title="All characters">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1h4v-6h3v6h4a1 1 0 0 0 1-1v-9"/></svg>
+          Home
+        </button>
+        <button id="recentChatsBtn" class="nav-btn" title="Recent chats">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Chats
+        </button>
+        <button id="favoritesBtn" class="nav-btn" title="Your favorites">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Favorites
+        </button>
+        <button id="groupChatsBtn" class="nav-btn" title="Group chats">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Group Chats
+        </button>
+        <button id="trendingBtn" class="nav-btn" title="Trending characters">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          Trending
+        </button>
+        <button id="mostLikedBtn" class="nav-btn" title="Most liked characters">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Most Liked
+        </button>
+        <button id="newCharacterBtn" class="nav-btn create-nav-btn" style="display:none">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Create Character
+        </button>
+        <button id="aiGenBtn" class="nav-btn ai-gen-nav-btn" style="display:none">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+          AI Generate
+        </button>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button id="membershipBtn" class="nav-btn membership-nav-btn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Go Pro
+        </button>
+        <button id="settingsBtn" class="nav-btn" title="Settings">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="main-content">
+
+      <!-- Gallery view -->
+      <div id="galleryView">
+        <header class="banner">
+          <div id="authArea" class="auth-area">
+            <div id="googleSignInWrapper"><div id="googleSignInBtn"></div></div>
+            <div id="userMenu" class="user-menu" hidden>
+              <button id="userMenuBtn" class="user-menu-btn">
+                <img id="userAvatar" class="user-avatar" alt="">
+                <span id="userName" class="user-name"></span>
+              </button>
+            </div>
+          </div>
+          <div class="banner-inner">
+            <p class="eyebrow">✦ your own stage</p>
+            <h1 class="wordmark">SceneAI</h1>
+            <p class="banner-tag">Every character you create is waiting back here for you.<br>Walk in, and start the scene.</p>
+          </div>
+        </header>
+
+        <section class="gallery-section">
+          <div class="gallery-head">
+            <h2>Your cast</h2>
+          </div>
+          <div class="filter-bar">
+            <div class="search-row">
+              <input id="searchInput" class="search-input" type="text" placeholder="Search name..." autocomplete="off">
+              <button id="searchBtn" class="search-btn">Enter</button>
+            </div>
+            <div id="filterTags" class="filter-tags"></div>
+          </div>
+          <div id="gallery" class="gallery"></div>
+          <div id="pagination" class="pagination"></div>
+        </section>
+      </div>
+
+      <!-- Recent chats view -->
+      <div id="recentChatsView" hidden>
+        <header class="banner banner-sm">
+          <div class="banner-inner">
+            <h1 class="wordmark">Chats</h1>
+            <p class="banner-tag">Pick up where you left off.</p>
+          </div>
+        </header>
+        <section class="gallery-section">
+          <div id="recentChatsGallery" class="gallery"></div>
+        </section>
+      </div>
+
+      <!-- Favorites view -->
+      <div id="favoritesView" hidden>
+        <header class="banner banner-sm">
+          <div class="banner-inner">
+            <h1 class="wordmark">Favorites</h1>
+            <p class="banner-tag">Your handpicked characters, always within reach.</p>
+          </div>
+        </header>
+        <section class="gallery-section">
+          <div id="favoritesGallery" class="gallery"></div>
+        </section>
+      </div>
+
+      <!-- Trending view -->
+      <div id="trendingView" hidden>
+        <header class="banner banner-sm">
+          <div class="banner-inner">
+            <h1 class="wordmark">Trending</h1>
+            <p class="banner-tag">Most popular characters across all chats.</p>
+          </div>
+        </header>
+        <section class="gallery-section">
+          <div id="trendingGallery" class="gallery"></div>
+        </section>
+      </div>
+
+      <!-- Most Liked view -->
+      <div id="mostLikedView" hidden>
+        <header class="banner banner-sm">
+          <div class="banner-inner">
+            <h1 class="wordmark">Most Liked</h1>
+            <p class="banner-tag">Characters loved by the community.</p>
+          </div>
+        </header>
+        <section class="gallery-section">
+          <div id="mostLikedGallery" class="gallery"></div>
+        </section>
+      </div>
+
+      <!-- Group Chats view -->
+      <div id="groupChatsView" hidden>
+        <header class="banner banner-sm">
+          <div class="banner-inner">
+            <h1 class="wordmark">Group Chats</h1>
+            <p class="banner-tag">Chat with multiple characters at once.</p>
+          </div>
+        </header>
+        <section class="gallery-section">
+          <button id="newGroupChatBtn" class="nav-btn create-nav-btn" style="margin-bottom:24px;display:inline-flex;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            New Group Chat
+          </button>
+          <div id="groupChatsGallery" class="gallery"></div>
+        </section>
+      </div>
+
+      <!-- Group Chat view -->
+      <div id="groupChatView" class="chat-view" hidden>
+        <header class="chat-header">
+          <button id="groupChatBackBtn" class="back-btn" aria-label="Back to group chats">←</button>
+          <div class="chat-header-info">
+            <div id="groupChatAvatars" class="group-chat-avatars"></div>
+            <div>
+              <h2 id="groupChatName">Group Chat</h2>
+              <p id="groupChatMembers" class="tagline"></p>
+            </div>
+          </div>
+          <div class="chat-header-menu" style="margin-left:auto;position:relative;">
+            <button id="groupChatMenuBtn" class="chat-menu-btn" title="Options">⋮</button>
+            <div id="groupChatMenuDropdown" class="chat-menu-dropdown">
+              <button id="groupChatDeleteBtn" class="danger">Delete group chat</button>
+            </div>
+          </div>
+        </header>
+        <div id="groupChatMessages" class="messages">
+          <div class="empty-state">
+            <p>Say hi to the group.</p>
+          </div>
+        </div>
+        <form id="groupChatComposer" class="composer">
+          <textarea id="groupChatInput" placeholder="Say something…" rows="1"></textarea>
+          <button type="submit" id="groupChatSendBtn">Send</button>
+        </form>
+      </div>
+
+      <!-- Chat view -->
+      <div id="chatView" class="chat-view" hidden>
+        <header class="chat-header">
+          <button id="backBtn" class="back-btn" aria-label="Back to cast">←</button>
+          <div class="chat-header-info">
+            <img id="activeAvatar" class="avatar-img" alt="">
+            <div>
+              <h2 id="activeName">SceneAI</h2>
+              <p id="activeTagline" class="tagline"></p>
+            </div>
+          </div>
+          <div class="chat-header-menu" style="margin-left:auto;position:relative;">
+            <button id="chatMenuBtn" class="chat-menu-btn" title="Options">⋮</button>
+            <div id="chatMenuDropdown" class="chat-menu-dropdown">
+              <button id="chatMenuConfigure">Configure character</button>
+              <button id="chatMenuMemory">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                Memories
+              </button>
+              <button id="chatMenuDelete" class="danger">Delete conversation</button>
+            </div>
+          </div>
+        </header>
+
+        <div id="messages" class="messages">
+          <div class="empty-state">
+            <p>Say hi to get things started.</p>
+          </div>
+        </div>
+
+        <form id="composer" class="composer">
+          <textarea id="input" placeholder="Say something…" rows="1"></textarea>
+          <button type="submit" id="sendBtn">Send</button>
+        </form>
+      </div>
+
+      <!-- Memory Panel -->
+      <div id="memoryPanel" class="side-panel">
+        <div class="side-panel-header">
+          <h3>Memories</h3>
+          <button id="memoryCloseBtn" class="side-panel-close">&times;</button>
+        </div>
+        <p class="side-panel-desc">Add facts about yourself that the character should remember across sessions.</p>
+        <div id="memoryList" class="memory-list"></div>
+        <div class="memory-input-row">
+          <input id="memoryInput" type="text" placeholder="e.g. I work as a nurse..." maxlength="200">
+          <button id="memoryAddBtn" class="primary">Add</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- New character modal -->
+  <dialog id="characterModal">
+    <form id="characterForm" method="dialog">
+      <h3 id="modalTitle">Create Character</h3>
+
+      <label>Photo
+        <div class="photo-button-wrap">
+          <button type="button" id="openPhotoEditor" class="photo-edit-btn">
+            <img id="photoThumb" class="photo-thumb" alt="">
+            <span id="photoBtnLabel">Add photo</span>
+          </button>
+          <input id="charPhoto" type="file" accept="image/*" hidden>
+        </div>
+      </label>
+
+      <label>Name
+        <input id="charName" type="text" required maxlength="40" placeholder="e.g. Captain Voss">
+      </label>
+      <label>Short tagline
+        <input id="charTagline" type="text" maxlength="60" placeholder="e.g. gruff starship captain">
+      </label>
+      <label>Description &amp; personality
+        <textarea id="charPersona" rows="5" required placeholder="Describe how this character talks, what they look like, their mood, quirks, backstory… this shows on their card too."></textarea>
+      </label>
+      <label>First message
+        <textarea id="charFirstMsg" rows="4" placeholder="The opening line the character sends when you first open a chat (e.g. a scenario setup). Leave empty for no first message."></textarea>
+      </label>
+      <div class="tags-section">
+        <span class="tags-label">Tags</span>
+        <div id="tagsContainer" class="tags-grid"></div>
+      </div>
+      <label>Accent color
+        <input id="charColor" type="color" value="#e2b04a">
+      </label>
+      <div class="modal-actions">
+        <button type="button" id="cancelCharacter">Cancel</button>
+        <button type="submit" class="primary">Create</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Settings modal -->
+  <dialog id="settingsModal">
+    <form id="settingsForm" method="dialog">
+      <h3>Settings</h3>
+      <div class="settings-row">
+        <label for="settingsThemeToggle">Appearance</label>
+        <button type="button" id="settingsThemeToggle" class="theme-toggle">
+          <span class="theme-toggle-label dark-label">Dark</span>
+          <span class="theme-toggle-track">
+            <span class="theme-toggle-thumb"></span>
+          </span>
+          <span class="theme-toggle-label light-label">Light</span>
+        </button>
+      </div>
+      <div class="settings-row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <label>Message Color</label>
+        <div id="msgColorPicker" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="color-swatch" data-color="#c9952c" style="width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:#c9952c;" title="Yellow"></button>
+          <button type="button" class="color-swatch" data-color="#1a3a5c" style="width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:#1a3a5c;" title="Dark Blue"></button>
+          <button type="button" class="color-swatch" data-color="#1a4a2a" style="width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:#1a4a2a;" title="Dark Green"></button>
+          <button type="button" class="color-swatch" data-color="#cc6600" style="width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:#cc6600;" title="Orange"></button>
+          <button type="button" class="color-swatch" data-color="#0099aa" style="width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:#0099aa;" title="Cyan"></button>
+        </div>
+      </div>
+      <div class="settings-row" id="longerMsgRow" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <label>Longer Messages</label>
+        <button type="button" id="longerMsgToggle" class="theme-toggle">
+          <span class="theme-toggle-label dark-label">Off</span>
+          <span class="theme-toggle-track">
+            <span class="theme-toggle-thumb"></span>
+          </span>
+          <span class="theme-toggle-label light-label">On</span>
+        </button>
+      </div>
+      <div class="settings-row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <button type="button" id="clearHistoryBtn" class="danger" style="background:none;border:1px solid #c0392b;color:#c0392b;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;width:100%;text-align:left;display:flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          Clear history
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="closeSettings">Done</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Clear history warning dialog -->
+  <dialog id="clearHistoryModal">
+    <div>
+      <h3 style="color:#c0392b;margin-top:0;">Warning</h3>
+      <p>This option will delete all your previous conversations.</p>
+      <div class="modal-actions">
+        <button type="button" id="cancelClearHistory">Cancel</button>
+        <button type="button" id="confirmClearHistory" style="background:#c0392b;color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;">Confirm</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Sign-in required dialog -->
+  <dialog id="signInRequiredModal">
+    <div>
+      <h3 style="margin-top:0;">Sign in required</h3>
+      <p id="signInRequiredMsg">Sign in with Google account first.</p>
+      <div class="modal-actions">
+        <button type="button" id="closeSignInRequired">OK</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Generic alert dialog -->
+  <dialog id="alertModal">
+    <div>
+      <h3 id="alertModalTitle" style="margin-top:0;"></h3>
+      <p id="alertModalMsg"></p>
+      <div class="modal-actions">
+        <button type="button" id="closeAlertModal">OK</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Profile modal -->
+  <dialog id="profileModal">
+    <div id="profileForm">
+      <h3>Profile</h3>
+
+      <div class="profile-pic-section">
+        <div class="profile-pic-wrap">
+          <img id="profilePicPreview" class="profile-pic-preview" alt="">
+          <label for="profilePicInput" class="profile-pic-edit" title="Change photo">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </label>
+          <button type="button" id="removeProfilePic" class="profile-pic-remove" title="Remove photo">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+        <input id="profilePicInput" type="file" accept="image/*" hidden>
+      </div>
+
+      <label>Username
+        <input id="profileUsername" type="text" maxlength="30" placeholder="Enter your username">
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" id="cancelProfile">Cancel</button>
+        <button type="button" class="primary" id="saveProfileBtn">Save</button>
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <div class="profile-actions">
+        <button type="button" id="switchAccountBtn" class="profile-action-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Switch account
+        </button>
+        <button type="button" id="logoutBtn" class="profile-action-btn danger">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Log out
+        </button>
+        <button type="button" id="deleteAccountBtn" class="profile-action-btn danger delete-account-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          Delete account
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Photo editor overlay -->
+  <div id="photoEditorOverlay" class="photo-editor-overlay" style="display:none;">
+    <div class="photo-editor">
+      <div class="photo-editor-header">
+        <h3>Edit Photo</h3>
+        <button id="closePhotoEditor" class="photo-editor-close">&times;</button>
+      </div>
+      <div class="photo-editor-body">
+        <p class="photo-editor-hint">Drag up/down to position. Use the slider to zoom.</p>
+        <div class="photo-editor-card" id="photoEditorCard">
+          <img id="photoEditorImg" class="photo-editor-img" alt="">
+        </div>
+        <div class="photo-editor-controls">
+          <label class="photo-editor-zoom-label">Zoom</label>
+          <input id="photoEditorZoom" type="range" min="0.3" max="3" step="0.1" value="1" class="photo-editor-zoom-slider">
+        </div>
+        <input id="photoEditorFileInput" type="file" accept="image/*" hidden>
+        <button type="button" id="photoEditorPickBtn" class="photo-editor-pick-btn">Choose image</button>
+      </div>
+      <div class="photo-editor-footer">
+        <button type="button" id="photoEditorCancel" class="photo-editor-cancel">Cancel</button>
+        <button type="button" id="photoEditorSave" class="photo-editor-save primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Character info modal (read-only) -->
+  <dialog id="charInfoModal">
+    <div id="charInfoContent">
+      <div class="char-info-photo-wrap">
+        <img id="charInfoPhoto" class="char-info-photo" alt="">
+      </div>
+      <h3 id="charInfoName"></h3>
+      <p id="charInfoTagline" class="char-info-tagline"></p>
+      <div id="charInfoTags" class="char-info-tags"></div>
+      <p id="charInfoCount" class="char-info-count"></p>
+      <p id="charInfoPersona" class="char-info-persona"></p>
+      <div class="modal-actions">
+        <button type="button" id="closeCharInfo" class="primary">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- AI Character Generator modal -->
+  <dialog id="aiGenModal">
+    <form id="aiGenForm" method="dialog">
+      <h3>AI Character Generator</h3>
+      <label>Describe your character concept
+        <textarea id="aiGenConcept" rows="3" required placeholder="e.g. a flirty barista who secretly writes poetry, soft-spoken but confident"></textarea>
+      </label>
+      <div id="aiGenLoading" style="display:none;text-align:center;padding:20px;color:var(--text-dim);">Generating character...</div>
+      <div id="aiGenResult" style="display:none;">
+        <label>Name
+          <input id="aiGenName" type="text" maxlength="40">
+        </label>
+        <label>Tagline
+          <input id="aiGenTagline" type="text" maxlength="60">
+        </label>
+        <label>Description &amp; personality
+          <textarea id="aiGenPersona" rows="4"></textarea>
+        </label>
+        <label>First message
+          <textarea id="aiGenFirstMsg" rows="3"></textarea>
+        </label>
+        <label>Tags (comma separated)
+          <input id="aiGenTags" type="text" placeholder="e.g. Romantic, Drama, Flirty">
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="aiGenCancel">Cancel</button>
+        <button type="button" id="aiGenGenerateBtn" class="primary">Generate</button>
+        <button type="button" id="aiGenUseBtn" class="primary" style="display:none;">Use This</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- New group chat modal -->
+  <dialog id="groupChatModal">
+    <form id="groupChatForm" method="dialog">
+      <h3>New Group Chat</h3>
+      <label>Chat name (optional)
+        <input id="groupChatNameInput" type="text" maxlength="40" placeholder="e.g. The Gang">
+      </label>
+      <div class="tags-section">
+        <span class="tags-label">Pick at least 2 characters</span>
+        <div id="groupChatCharSelect" class="group-chat-char-select"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="cancelGroupChat">Cancel</button>
+        <button type="submit" class="primary">Create</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Membership modal -->
+  <dialog id="membershipModal">
+    <div class="membership-content">
+      <h3>Upgrade to Pro</h3>
+      <p class="membership-subtitle">Unlock the full SceneAI experience</p>
+      <div class="membership-price">$3<span style="font-size:14px;color:var(--text-dim);">/month</span></div>
+      <div class="membership-features">
+        <div class="membership-feature">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          <span>Create your own characters</span>
+        </div>
+        <div class="membership-feature">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Priority replies (faster responses)</span>
+        </div>
+        <div class="membership-feature">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Longer messages (toggle in settings)</span>
+        </div>
+        <div class="membership-feature">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Ad-free experience (coming soon)</span>
+        </div>
+      </div>
+      <div id="membershipSubscribed" style="display:none;text-align:center;padding:16px;color:var(--accent-bright);font-weight:600;">
+        You are a Pro member!
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="closeMembership">Close</button>
+        <button type="button" id="subscribeBtn" class="primary" style="background:linear-gradient(135deg,#6b3fa0,#3a7bd5);">Subscribe Now</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    (function() {
+      var hash = window.location.hash;
+      if (hash && hash.indexOf("access_token") !== -1 && window.opener) {
+        var params = new URLSearchParams(hash.substring(1));
+        var token = params.get("access_token");
+        if (token) {
+          window.opener.postMessage({ type: "google_token", accessToken: token }, window.location.origin);
+          window.close();
+        }
+      }
+    })();
+  </script>
+  <dialog id="confirmDialog">
+    <p id="confirmMessage"></p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+      <button id="confirmCancel" class="secondary">Cancel</button>
+      <button id="confirmOk" class="danger" style="background:none;border:1px solid #c0392b;color:#c0392b;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;">Confirm</button>
+    </div>
+  </dialog>
+  <script src="script.js"></script>
+</body>
+</html>

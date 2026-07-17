@@ -1,0 +1,4 @@
+node_modules/
+sceneai.db
+.env
+check_db.js
