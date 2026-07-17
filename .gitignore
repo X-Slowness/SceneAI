@@ -1,4 +1,11 @@
 node_modules/
 sceneai.db
+sceneai.db-shm
+sceneai.db-wal
 .env
 check_db.js
+.agents/
+skills-lock.json
+stderr.log
+stdout.log
+check.js
