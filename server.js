@@ -292,69 +292,61 @@ if (!needsRestore && backupExists) {
 }
 
 if (needsRestore) {
-  // Try backup first (skip if file is too large — it contains old photo data)
   let restored = false;
   try {
     if (fs.existsSync(BACKUP_PATH)) {
       const stat = fs.statSync(BACKUP_PATH);
+      let data;
       if (stat.size > 200000) {
-        // Old backup with photos — skip it, will be regenerated without photos
-        console.log("Skipping large backup (" + (stat.size/1024).toFixed(0) + "KB) — will regenerate without photos.");
+        console.log("Large backup (" + (stat.size/1024).toFixed(0) + "KB). Stripping photos...");
+        data = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
+        if (data.characters) { for (const c of data.characters) { delete c.photo; } }
+        fs.writeFileSync(BACKUP_PATH, JSON.stringify(data));
       } else {
-        const data = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
-        if (data.characters && data.characters.length > 0) {
-          // Load photos from seed_characters.json
-          let seedPhotos = {};
-          try {
-            const seedData = JSON.parse(fs.readFileSync(path.join(__dirname, "seed_characters.json"), "utf8"));
-            for (const s of seedData) { if (s.photo) seedPhotos[s.name] = s.photo; }
-          } catch(e) {}
-
-          const restore = db.transaction(() => {
-            for (const c of data.characters) {
-              const photo = seedPhotos[c.name] || null;
-              db.prepare(`INSERT OR REPLACE INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, like_count, message_count)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-                .run(c.id, c.name, c.tagline, c.color, photo, c.photo_pos, c.photo_zoom, c.persona, c.first_message, c.tags, c.like_count || 0, c.message_count || 0);
-            }
-            for (const m of (data.messages || [])) {
-              db.prepare("INSERT OR IGNORE INTO messages (id, character_id, user_id, role, content, ts) VALUES (?, ?, ?, ?, ?, ?)")
-                .run(m.id, m.character_id, m.user_id, m.role, m.content, m.ts);
-            }
-            for (const l of (data.likes || [])) {
-              db.prepare("INSERT OR IGNORE INTO likes (character_id, user_id) VALUES (?, ?)").run(l.character_id, l.user_id);
-            }
-            for (const f of (data.favorites || [])) {
-              db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
-            }
-            for (const s of (data.subscriptions || [])) {
-              db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)`)
-                .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.created_at);
-            }
-            for (const m of (data.memories || [])) {
-              db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)")
-                .run(m.id, m.character_id, m.user_id, m.content, m.created_at);
-            }
-            for (const g of (data.group_chats || [])) {
-              db.prepare("INSERT OR REPLACE INTO group_chats (id, user_id, name, created_at) VALUES (?, ?, ?, ?)")
-                .run(g.id, g.user_id, g.name, g.created_at);
-            }
-            for (const gm of (data.group_chat_members || [])) {
-              db.prepare("INSERT OR IGNORE INTO group_chat_members (group_id, character_id) VALUES (?, ?)")
-                .run(gm.group_id, gm.character_id);
-            }
-            for (const p of (data.user_profiles || [])) {
-              db.prepare("INSERT OR REPLACE INTO user_profiles (user_id, username, picture, created_at) VALUES (?, ?, ?, ?)")
-                .run(p.user_id, p.username, p.picture, p.created_at);
-            }
-          });
-          restore();
-          db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id)`);
-          db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WHERE messages.character_id = characters.id)`);
-          console.log("Restored from backup:", data.characters.length, "characters,", (data.messages || []).length, "messages");
-          restored = true;
-        }
+        data = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
+      }
+      if (data.characters && data.characters.length > 0) {
+        let seedPhotos = {};
+        try {
+          const seedData = JSON.parse(fs.readFileSync(path.join(__dirname, "seed_characters.json"), "utf8"));
+          for (const s of seedData) { if (s.photo) seedPhotos[s.name] = s.photo; }
+        } catch(e) {}
+        const restore = db.transaction(() => {
+          for (const c of data.characters) {
+            db.prepare(`INSERT OR REPLACE INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, like_count, message_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+              .run(c.id, c.name, c.tagline, c.color, seedPhotos[c.name] || null, c.photo_pos, c.photo_zoom, c.persona, c.first_message, c.tags, c.like_count || 0, c.message_count || 0);
+          }
+          for (const m of (data.messages || [])) {
+            db.prepare("INSERT OR IGNORE INTO messages (id, character_id, user_id, role, content, ts) VALUES (?, ?, ?, ?, ?, ?)").run(m.id, m.character_id, m.user_id, m.role, m.content, m.ts);
+          }
+          for (const l of (data.likes || [])) {
+            db.prepare("INSERT OR IGNORE INTO likes (character_id, user_id) VALUES (?, ?)").run(l.character_id, l.user_id);
+          }
+          for (const f of (data.favorites || [])) {
+            db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
+          }
+          for (const s of (data.subscriptions || [])) {
+            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+              .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.created_at);
+          }
+          for (const m of (data.memories || [])) {
+            db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)").run(m.id, m.character_id, m.user_id, m.content, m.created_at);
+          }
+          for (const g of (data.group_chats || [])) {
+            db.prepare("INSERT OR REPLACE INTO group_chats (id, user_id, name, created_at) VALUES (?, ?, ?, ?)").run(g.id, g.user_id, g.name, g.created_at);
+          }
+          for (const gm of (data.group_chat_members || [])) {
+            db.prepare("INSERT OR IGNORE INTO group_chat_members (group_id, character_id) VALUES (?, ?)").run(gm.group_id, gm.character_id);
+          }
+          for (const p of (data.user_profiles || [])) {
+            db.prepare("INSERT OR REPLACE INTO user_profiles (user_id, username, picture, created_at) VALUES (?, ?, ?, ?)").run(p.user_id, p.username, p.picture, p.created_at);
+          }
+        });
+        restore();
+        db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id)`);
+        db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WHERE messages.character_id = characters.id)`);
+        console.log("Restored:", data.characters.length, "chars,", (data.messages || []).length, "msgs");
+        restored = true;
       }
     }
   } catch (e) {
