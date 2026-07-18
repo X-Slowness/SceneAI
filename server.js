@@ -86,6 +86,62 @@ app.get("/api/debug", requireAdmin, (req, res) => {
   res.json({ DB_PATH, BACKUP_PATH, dbExists, backupExists, dataDir, files, envDbPath: process.env.DATABASE_PATH || "not set", railwayMount: process.env.RAILWAY_VOLUME_MOUNT_PATH || "not set" });
 });
 
+// Admin: restore data from backup JSON
+app.post("/api/admin/restore", requireAdmin, (req, res) => {
+  const data = req.body;
+  if (!data || !data.characters) {
+    return res.status(400).json({ error: "Invalid backup data." });
+  }
+  try {
+    const restore = db.transaction(() => {
+      for (const c of data.characters) {
+        db.prepare(`INSERT OR REPLACE INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, like_count, message_count)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+          .run(c.id, c.name, c.tagline, c.color, c.photo, c.photo_pos || 50, c.photo_zoom || 1.0, c.persona, c.first_message || "", c.tags || "[]", c.like_count || 0, c.message_count || 0);
+      }
+      for (const m of (data.messages || [])) {
+        db.prepare("INSERT OR IGNORE INTO messages (id, character_id, user_id, role, content, ts) VALUES (?, ?, ?, ?, ?, ?)")
+          .run(m.id, m.character_id, m.user_id, m.role, m.content, m.ts);
+      }
+      for (const l of (data.likes || [])) {
+        db.prepare("INSERT OR IGNORE INTO likes (character_id, user_id) VALUES (?, ?)").run(l.character_id, l.user_id);
+      }
+      for (const f of (data.favorites || [])) {
+        db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
+      }
+      for (const s of (data.subscriptions || [])) {
+        db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`)
+          .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.created_at);
+      }
+      for (const m of (data.memories || [])) {
+        db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)")
+          .run(m.id, m.character_id, m.user_id, m.content, m.created_at);
+      }
+      for (const g of (data.group_chats || [])) {
+        db.prepare("INSERT OR REPLACE INTO group_chats (id, user_id, name, created_at) VALUES (?, ?, ?, ?)")
+          .run(g.id, g.user_id, g.name, g.created_at);
+      }
+      for (const gm of (data.group_chat_members || [])) {
+        db.prepare("INSERT OR IGNORE INTO group_chat_members (group_id, character_id) VALUES (?, ?)")
+          .run(gm.group_id, gm.character_id);
+      }
+      for (const p of (data.user_profiles || [])) {
+        db.prepare("INSERT OR REPLACE INTO user_profiles (user_id, username, picture, created_at) VALUES (?, ?, ?, ?)")
+          .run(p.user_id, p.username, p.picture, p.created_at);
+      }
+    });
+    restore();
+    db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id)`);
+    db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WHERE messages.character_id = characters.id)`);
+    saveBackup();
+    res.json({ ok: true, characters: data.characters.length, messages: (data.messages || []).length, likes: (data.likes || []).length });
+  } catch (e) {
+    console.error("Admin restore failed:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Database ──────────────────────────────────────────────
 const fs = require("fs");
 // Always try /data first (Railway volume), then /app/data, then env var, then local

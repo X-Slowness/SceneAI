@@ -1646,6 +1646,12 @@ async function loadProfileData() {
       profileData.username = serverProfile.username || profileData.username;
       profileData.picture = serverProfile.picture || profileData.picture;
       localStorage.setItem(getProfileKey(), JSON.stringify(profileData));
+    } else if (profileData.username || profileData.picture) {
+      fetch(`/api/profile/${currentUser.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: profileData.username, picture: profileData.picture })
+      }).catch(() => {});
     }
   } catch(e) {
     console.warn("Could not load server profile:", e);
