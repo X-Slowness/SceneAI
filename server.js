@@ -59,7 +59,7 @@ app.use(express.json({ limit: "5mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // ── Admin ─────────────────────────────────────────────────
-const ADMIN_USER_ID = "117717863576909119358";
+const ADMIN_USER_ID = "100595293806084428244";
 
 function requireAdmin(req, res, next) {
   const userId = req.headers["x-user-id"];
