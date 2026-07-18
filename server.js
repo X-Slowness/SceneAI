@@ -83,12 +83,15 @@ app.get("/api/debug", requireAdmin, (req, res) => {
   const dataDir = path.dirname(DB_PATH);
   let files = [];
   try { files = fs.readdirSync(dataDir); } catch(e) {}
-  res.json({ DB_PATH, BACKUP_PATH, dbExists, backupExists, dataDir, files, envDbPath: process.env.DATABASE_PATH || "not set" });
+  res.json({ DB_PATH, BACKUP_PATH, dbExists, backupExists, dataDir, files, envDbPath: process.env.DATABASE_PATH || "not set", railwayMount: process.env.RAILWAY_VOLUME_MOUNT_PATH || "not set" });
 });
 
 // ── Database ──────────────────────────────────────────────
-const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, "sceneai.db");
 const fs = require("fs");
+// Auto-detect Railway volume mount, fall back to env var, then local
+const RAILWAY_MOUNT = process.env.RAILWAY_VOLUME_MOUNT_PATH || "";
+const DB_PATH = RAILWAY_MOUNT ? path.join(RAILWAY_MOUNT, "sceneai.db") : (process.env.DATABASE_PATH || path.join(__dirname, "sceneai.db"));
+const BACKUP_PATH = path.join(path.dirname(DB_PATH), "sceneai_backup.json");
 if (!fs.existsSync(path.dirname(DB_PATH))) {
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 }
