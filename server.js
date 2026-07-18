@@ -274,28 +274,51 @@ let needsRestore = charCount === 0;
 // Also restore if backup exists and has more data than current DB
 if (!needsRestore && backupExists) {
   try {
-    const backupData = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
-    const backupMsgs = (backupData.messages || []).length;
-    const backupLikes = (backupData.likes || []).length;
-    if (backupMsgs > msgCount || backupLikes > 0) {
+    const stat = fs.statSync(BACKUP_PATH);
+    if (stat.size > 500000) {
+      // Backup is huge (has old photo data). Regenerate it small.
+      console.log("Backup file too large (" + stat.size + " bytes), likely contains old photo data. Will regenerate after seed.");
       needsRestore = true;
-      console.log("Backup has more data than current DB. Restoring...");
+    } else {
+      const backupData = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
+      const backupMsgs = (backupData.messages || []).length;
+      const backupLikes = (backupData.likes || []).length;
+      if (backupMsgs > msgCount || backupLikes > 0) {
+        needsRestore = true;
+        console.log("Backup has more data than current DB. Restoring...");
+      }
     }
   } catch(e) {}
 }
 
 if (needsRestore) {
-  // Try backup first
+  // Try backup first (dynamic data only — photos come from seed_characters.json)
   let restored = false;
   try {
     if (fs.existsSync(BACKUP_PATH)) {
       const data = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
       if (data.characters && data.characters.length > 0) {
+        // Load photos from seed_characters.json
+        let seedPhotos = {};
+        try {
+          const seedData = JSON.parse(fs.readFileSync(path.join(__dirname, "seed_characters.json"), "utf8"));
+          const seedRows = db.prepare("SELECT id, name, photo FROM characters").all();
+          for (const row of seedRows) { seedPhotos[row.name] = row.photo; }
+          for (const s of seedData) { if (s.photo) seedPhotos[s.name] = s.photo; }
+        } catch(e) {}
+
         const restore = db.transaction(() => {
           for (const c of data.characters) {
-            db.prepare(`INSERT OR REPLACE INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, like_count, message_count)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-              .run(c.id, c.name, c.tagline, c.color, c.photo, c.photo_pos, c.photo_zoom, c.persona, c.first_message, c.tags, c.like_count || 0, c.message_count || 0);
+            const photo = seedPhotos[c.name] || null;
+            const existing = db.prepare("SELECT id FROM characters WHERE id = ?").get(c.id);
+            if (existing) {
+              db.prepare(`UPDATE characters SET name=?, tagline=?, color=?, photo_pos=?, photo_zoom=?, persona=?, first_message=?, tags=?, like_count=?, message_count=? WHERE id=?`)
+                .run(c.name, c.tagline, c.color, c.photo_pos, c.photo_zoom, c.persona, c.first_message, c.tags, c.like_count || 0, c.message_count || 0, c.id);
+            } else {
+              db.prepare(`INSERT INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, like_count, message_count)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+                .run(c.id, c.name, c.tagline, c.color, photo, c.photo_pos, c.photo_zoom, c.persona, c.first_message, c.tags, c.like_count || 0, c.message_count || 0);
+            }
           }
           for (const m of (data.messages || [])) {
             db.prepare("INSERT OR IGNORE INTO messages (id, character_id, user_id, role, content, ts) VALUES (?, ?, ?, ?, ?, ?)")
@@ -1085,8 +1108,12 @@ app.listen(PORT, () => {
 
 function saveBackup() {
   try {
+    const chars = db.prepare("SELECT * FROM characters").all().map(c => {
+      const { photo, ...rest } = c;
+      return rest;
+    });
     const data = {
-      characters: db.prepare("SELECT * FROM characters").all(),
+      characters: chars,
       messages: db.prepare("SELECT * FROM messages").all(),
       likes: db.prepare("SELECT * FROM likes").all(),
       favorites: db.prepare("SELECT * FROM favorites").all(),
