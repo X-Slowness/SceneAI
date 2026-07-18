@@ -28,10 +28,11 @@ if (API_KEYS.length === 0 || !API_KEYS[0]) {
 app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }), async (req, res) => {
   try {
     const event = JSON.parse(req.body.toString());
-    console.log("LemonSqueezy webhook event:", event.meta?.event_name);
+    console.log("WEBHOOK RECEIVED:", event.meta?.event_name);
     if (event.meta?.event_name === "order_created") {
       const order = event.data;
-      const userId = order.attributes?.custom?.userId;
+      const userId = event.meta?.custom_data?.userId || event.meta?.custom_data?.user_id;
+      console.log("Order userId:", userId, "custom_data:", JSON.stringify(event.meta?.custom_data));
       if (userId) {
         const endDate = Date.now() + 30 * 24 * 60 * 60 * 1000;
         db.prepare(`INSERT INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, created_at)
@@ -39,6 +40,8 @@ app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }),
           ON CONFLICT(user_id) DO UPDATE SET tier = 'subscriber', lemon_order_id = ?, lemon_subscription_id = ?, current_period_end = ?`)
           .run(userId, order.id, order.id, endDate, Date.now(), order.id, order.id, endDate);
         console.log("Activated subscription for user:", userId);
+      } else {
+        console.log("No userId found in custom_data");
       }
     }
     if (event.meta?.event_name === "subscription_cancelled") {
