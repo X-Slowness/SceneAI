@@ -26,13 +26,7 @@ if (API_KEYS.length === 0 || !API_KEYS[0]) {
 
 // ── Webhook (must be before express.json middleware) ───────
 app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }), async (req, res) => {
-  if (!LEMON_WEBHOOK_SECRET) { console.log("Webhook received but no secret configured"); return res.sendStatus(200); }
   try {
-    const hmac = crypto.createHmac("sha256", LEMON_WEBHOOK_SECRET);
-    hmac.update(req.body);
-    const signature = hmac.digest("hex");
-    if (req.headers["x-signature"] !== signature) { console.log("Webhook signature mismatch"); return res.sendStatus(401); }
-
     const event = JSON.parse(req.body.toString());
     console.log("LemonSqueezy webhook event:", event.meta?.event_name);
     if (event.meta?.event_name === "order_created") {
