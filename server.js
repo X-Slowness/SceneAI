@@ -262,8 +262,24 @@ db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE li
 db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WHERE messages.character_id = characters.id) WHERE message_count = 0 AND id IN (SELECT character_id FROM messages)`);
 
 // Restore from backup or seed characters if DB is empty
+const msgCount = db.prepare("SELECT COUNT(*) as c FROM messages").get().c;
 const charCount = db.prepare("SELECT COUNT(*) as c FROM characters").get().c;
-if (charCount === 0) {
+let needsRestore = charCount === 0;
+
+// Also restore if backup exists and has more data than current DB
+if (!needsRestore && fs.existsSync(BACKUP_PATH)) {
+  try {
+    const backupData = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
+    const backupMsgs = (backupData.messages || []).length;
+    const backupLikes = (backupData.likes || []).length;
+    if (backupMsgs > msgCount || backupLikes > 0) {
+      needsRestore = true;
+      console.log("Backup has more data than current DB. Restoring...");
+    }
+  } catch(e) {}
+}
+
+if (needsRestore) {
   // Try backup first
   let restored = false;
   try {
