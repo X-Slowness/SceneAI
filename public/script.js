@@ -1054,6 +1054,7 @@ let savedGalleryScroll = 0;
 
 function showGallery() {
   activeId = null;
+  localStorage.removeItem("sceneai_activeChat");
   chatView.hidden = true;
   recentChatsView.hidden = true;
   favoritesView.hidden = true;
@@ -1138,6 +1139,7 @@ let currentMessages = [];
 
 async function openChat(id) {
   activeId = id;
+  localStorage.setItem("sceneai_activeChat", id);
   const c = characters.find(x => x.id === id);
   activeNameEl.textContent = c.name;
   activeTaglineEl.textContent = c.tagline || "";
@@ -1155,7 +1157,6 @@ async function openChat(id) {
   galleryView.hidden = true;
   recentChatsView.hidden = true;
   chatView.hidden = false;
-  setTab(null);
   document.querySelector(".app").classList.add("chat-active");
   currentMessages = await loadMessages(id);
   renderMessages();
@@ -2261,8 +2262,11 @@ async function init() {
   await checkSubscription();
   characters = shuffleArray(await loadCharacters());
   const savedTab = localStorage.getItem("sceneai_activeTab");
+  const savedChat = localStorage.getItem("sceneai_activeChat");
   const tabMap = { home: showGallery, chats: showRecentChats, favorites: showFavorites, trending: showTrending, mostLiked: showMostLiked, groupChats: showGroupChats };
-  if (savedTab && tabMap[savedTab]) {
+  if (savedChat && characters.find(x => x.id === savedChat)) {
+    openChat(savedChat);
+  } else if (savedTab && tabMap[savedTab]) {
     tabMap[savedTab]();
   } else {
     showGallery();
