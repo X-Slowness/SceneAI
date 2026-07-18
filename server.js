@@ -159,6 +159,9 @@ if (volPath) {
   }
 }
 console.log("Database path:", DB_PATH);
+console.log("Backup path:", BACKUP_PATH);
+console.log("RAILWAY_VOLUME_MOUNT_PATH:", process.env.RAILWAY_VOLUME_MOUNT_PATH || "not set");
+console.log("/data exists:", fs.existsSync("/data"));
 const BACKUP_PATH = path.join(path.dirname(DB_PATH), "sceneai_backup.json");
 const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
@@ -264,10 +267,12 @@ db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WH
 // Restore from backup or seed characters if DB is empty
 const msgCount = db.prepare("SELECT COUNT(*) as c FROM messages").get().c;
 const charCount = db.prepare("SELECT COUNT(*) as c FROM characters").get().c;
+const backupExists = fs.existsSync(BACKUP_PATH);
+console.log("Startup state - chars:", charCount, "msgs:", msgCount, "backup exists:", backupExists);
 let needsRestore = charCount === 0;
 
 // Also restore if backup exists and has more data than current DB
-if (!needsRestore && fs.existsSync(BACKUP_PATH)) {
+if (!needsRestore && backupExists) {
   try {
     const backupData = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
     const backupMsgs = (backupData.messages || []).length;
