@@ -159,10 +159,10 @@ if (volPath) {
   }
 }
 console.log("Database path:", DB_PATH);
-console.log("Backup path:", BACKUP_PATH);
 console.log("RAILWAY_VOLUME_MOUNT_PATH:", process.env.RAILWAY_VOLUME_MOUNT_PATH || "not set");
 console.log("/data exists:", fs.existsSync("/data"));
 const BACKUP_PATH = path.join(path.dirname(DB_PATH), "sceneai_backup.json");
+console.log("Backup path:", BACKUP_PATH);
 const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 
