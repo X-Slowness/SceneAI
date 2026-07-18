@@ -891,8 +891,8 @@ app.post("/api/chat", async (req, res) => {
   const userName = username || "User";
   const subscribed = isSubscribed(userId);
   const longerMsgs = isLongerMessages(userId);
-  const wordRange = longerMsgs ? "300 and 400" : subscribed ? "250 and 350" : "200 and 250";
-  const maxTokens = longerMsgs ? 600 : subscribed ? 500 : 400;
+  const wordRange = longerMsgs ? "150 and 200" : subscribed ? "100 and 150" : "50 and 100";
+  const maxTokens = longerMsgs ? 300 : subscribed ? 250 : 150;
   
   // Fetch memories for this character + user
   let memoryBlock = "";
