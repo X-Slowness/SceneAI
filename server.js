@@ -191,7 +191,6 @@ db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE li
 db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WHERE messages.character_id = characters.id) WHERE message_count = 0 AND id IN (SELECT character_id FROM messages)`);
 
 // Restore from backup or seed characters if DB is empty
-const BACKUP_PATH = path.join(path.dirname(DB_PATH), "sceneai_backup.json");
 const charCount = db.prepare("SELECT COUNT(*) as c FROM characters").get().c;
 if (charCount === 0) {
   // Try backup first
