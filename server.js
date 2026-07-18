@@ -88,13 +88,24 @@ app.get("/api/debug", requireAdmin, (req, res) => {
 
 // ── Database ──────────────────────────────────────────────
 const fs = require("fs");
-// Auto-detect Railway volume mount, fall back to env var, then local
-const RAILWAY_MOUNT = process.env.RAILWAY_VOLUME_MOUNT_PATH || "";
-const DB_PATH = RAILWAY_MOUNT ? path.join(RAILWAY_MOUNT, "sceneai.db") : (process.env.DATABASE_PATH || path.join(__dirname, "sceneai.db"));
-const BACKUP_PATH = path.join(path.dirname(DB_PATH), "sceneai_backup.json");
-if (!fs.existsSync(path.dirname(DB_PATH))) {
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+// Always try /data first (Railway volume), then /app/data, then env var, then local
+let DB_PATH;
+const volPath = process.env.RAILWAY_VOLUME_MOUNT_PATH;
+if (volPath) {
+  DB_PATH = path.join(volPath, "sceneai.db");
+} else if (process.env.DATABASE_PATH) {
+  DB_PATH = process.env.DATABASE_PATH;
+} else {
+  // Try /data — if Railway volume is mounted there, it persists
+  try { fs.mkdirSync("/data", { recursive: true }); } catch(e) {}
+  if (fs.existsSync("/data")) {
+    DB_PATH = "/data/sceneai.db";
+  } else {
+    DB_PATH = path.join(__dirname, "sceneai.db");
+  }
 }
+console.log("Database path:", DB_PATH);
+const BACKUP_PATH = path.join(path.dirname(DB_PATH), "sceneai_backup.json");
 const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 
