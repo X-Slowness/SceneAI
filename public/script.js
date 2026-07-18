@@ -98,7 +98,7 @@ async function checkSubscription() {
 
 function applyAdminUI() {
   const newBtn = document.getElementById("newCharacterBtn");
-  if (newBtn) newBtn.style.display = isAdmin ? "" : "none";
+  if (newBtn) newBtn.style.display = (isAdmin || isSubscriber) ? "" : "none";
   const aiBtn = document.getElementById("aiGenBtn");
   if (aiBtn) aiBtn.style.display = isAdmin ? "" : "none";
   document.querySelectorAll(".card-edit").forEach(el => {
@@ -1604,6 +1604,7 @@ function handleOAuthRedirect() {
         saveProfileData();
       }
       checkAdmin().then(() => checkSubscription().then(() => {
+        applyAdminUI();
         refreshCharacters();
         showUserMenu();
       }));
@@ -1698,6 +1699,7 @@ async function handleCredentialResponse(response) {
   }
   await checkAdmin();
   await checkSubscription();
+  applyAdminUI();
   await refreshCharacters();
   showUserMenu();
 }
@@ -1828,6 +1830,7 @@ switchAccountBtn.addEventListener("click", () => {
           }
           await checkAdmin();
           await checkSubscription();
+          applyAdminUI();
           await refreshCharacters();
           showUserMenu();
         }
