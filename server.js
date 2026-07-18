@@ -76,7 +76,12 @@ app.get("/api/admin/check", (req, res) => {
 });
 
 // ── Database ──────────────────────────────────────────────
-const db = new Database(path.join(__dirname, "sceneai.db"));
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, "sceneai.db");
+const fs = require("fs");
+if (!fs.existsSync(path.dirname(DB_PATH))) {
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+}
+const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 
 db.exec(`
@@ -171,23 +176,78 @@ db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE li
 // Seed message_count from messages table
 db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WHERE messages.character_id = characters.id) WHERE message_count = 0 AND id IN (SELECT character_id FROM messages)`);
 
-// Seed default characters if table is empty
+// Restore from backup or seed characters if DB is empty
+const BACKUP_PATH = path.join(path.dirname(DB_PATH), "sceneai_backup.json");
 const charCount = db.prepare("SELECT COUNT(*) as c FROM characters").get().c;
 if (charCount === 0) {
+  // Try backup first
+  let restored = false;
   try {
-    const seedData = JSON.parse(require("fs").readFileSync(path.join(__dirname, "seed_characters.json"), "utf8"));
-    const insert = db.prepare(
-      "INSERT INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-    );
-    const seed = db.transaction(() => {
-      for (const c of seedData) {
-        insert.run(crypto.randomUUID(), c.name, c.tagline, c.color, c.photo, c.photoPos ?? 50, c.photoZoom ?? 1.0, c.persona, c.firstMessage, JSON.stringify(c.tags));
+    if (fs.existsSync(BACKUP_PATH)) {
+      const data = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
+      if (data.characters && data.characters.length > 0) {
+        const restore = db.transaction(() => {
+          for (const c of data.characters) {
+            db.prepare(`INSERT OR REPLACE INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, like_count, message_count)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+              .run(c.id, c.name, c.tagline, c.color, c.photo, c.photo_pos, c.photo_zoom, c.persona, c.first_message, c.tags, c.like_count || 0, c.message_count || 0);
+          }
+          for (const m of (data.messages || [])) {
+            db.prepare("INSERT OR IGNORE INTO messages (id, character_id, user_id, role, content, ts) VALUES (?, ?, ?, ?, ?, ?)")
+              .run(m.id, m.character_id, m.user_id, m.role, m.content, m.ts);
+          }
+          for (const l of (data.likes || [])) {
+            db.prepare("INSERT OR IGNORE INTO likes (character_id, user_id) VALUES (?, ?)").run(l.character_id, l.user_id);
+          }
+          for (const f of (data.favorites || [])) {
+            db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
+          }
+          for (const s of (data.subscriptions || [])) {
+            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?)`)
+              .run(s.user_id, s.tier, s.lemon_order_id, s.lemon_subscription_id, s.current_period_end, s.longer_messages || 0, s.created_at);
+          }
+          for (const m of (data.memories || [])) {
+            db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)")
+              .run(m.id, m.character_id, m.user_id, m.content, m.created_at);
+          }
+          for (const g of (data.group_chats || [])) {
+            db.prepare("INSERT OR REPLACE INTO group_chats (id, user_id, name, created_at) VALUES (?, ?, ?, ?)")
+              .run(g.id, g.user_id, g.name, g.created_at);
+          }
+          for (const gm of (data.group_chat_members || [])) {
+            db.prepare("INSERT OR IGNORE INTO group_chat_members (group_id, character_id) VALUES (?, ?)")
+              .run(gm.group_id, gm.character_id);
+          }
+        });
+        restore();
+        db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id)`);
+        db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WHERE messages.character_id = characters.id)`);
+        console.log("Restored from backup:", data.characters.length, "characters,", (data.messages || []).length, "messages");
+        restored = true;
       }
-    });
-    seed();
-    console.log("Seeded", seedData.length, "characters from seed_characters.json.");
+    }
   } catch (e) {
-    console.error("Failed to load seed_characters.json:", e.message);
+    console.error("Backup restore failed:", e.message);
+  }
+
+  // Fall back to seed_characters.json if no backup
+  if (!restored) {
+    try {
+      const seedData = JSON.parse(fs.readFileSync(path.join(__dirname, "seed_characters.json"), "utf8"));
+      const insert = db.prepare(
+        "INSERT INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      );
+      const seed = db.transaction(() => {
+        for (const c of seedData) {
+          insert.run(crypto.randomUUID(), c.name, c.tagline, c.color, c.photo, c.photoPos ?? 50, c.photoZoom ?? 1.0, c.persona, c.firstMessage, JSON.stringify(c.tags));
+        }
+      });
+      seed();
+      console.log("Seeded", seedData.length, "characters from seed_characters.json.");
+    } catch (e) {
+      console.error("Failed to load seed_characters.json:", e.message);
+    }
   }
 }
 
@@ -896,4 +956,36 @@ app.post("/api/chat", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`SceneAI server running at http://localhost:${PORT}`);
+  console.log(`Database path: ${DB_PATH}`);
 });
+
+// ── Auto-backup system ────────────────────────────────────
+// Saves full DB state to JSON periodically and on exit
+// Restore happens at startup (above) if DB is empty
+
+function saveBackup() {
+  try {
+    const data = {
+      characters: db.prepare("SELECT * FROM characters").all(),
+      messages: db.prepare("SELECT * FROM messages").all(),
+      likes: db.prepare("SELECT * FROM likes").all(),
+      favorites: db.prepare("SELECT * FROM favorites").all(),
+      subscriptions: db.prepare("SELECT * FROM subscriptions").all(),
+      memories: db.prepare("SELECT * FROM memories").all(),
+      group_chats: db.prepare("SELECT * FROM group_chats").all(),
+      group_chat_members: db.prepare("SELECT * FROM group_chat_members").all(),
+      saved_at: Date.now()
+    };
+    fs.writeFileSync(BACKUP_PATH, JSON.stringify(data));
+    console.log("DB backup saved.");
+  } catch (e) {
+    console.error("Backup failed:", e.message);
+  }
+}
+
+// Auto-save every 5 minutes
+setInterval(saveBackup, 5 * 60 * 1000);
+
+// Save on exit
+process.on("SIGINT", () => { saveBackup(); process.exit(); });
+process.on("SIGTERM", () => { saveBackup(); process.exit(); });
