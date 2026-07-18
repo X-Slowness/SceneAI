@@ -174,20 +174,53 @@ db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WH
 // Seed default characters if table is empty
 const charCount = db.prepare("SELECT COUNT(*) as c FROM characters").get().c;
 if (charCount === 0) {
-  const insert = db.prepare(
-    "INSERT INTO characters (id, name, tagline, color, photo, persona, tags) VALUES (?, ?, ?, ?, ?, ?, ?)"
-  );
-  const seed = db.transaction(() => {
-    insert.run(crypto.randomUUID(), "Nova", "curious ship AI", "#7ea6ff", null,
-      "You are Nova, a curious, upbeat AI that runs a small starship. You love asking questions about the human world, use short excited sentences, and occasionally reference ship systems.",
-      JSON.stringify(["Female", "Sci-Fi"]));
-    insert.run(crypto.randomUUID(), "Captain Voss", "gruff retired sea captain", "#d97757", null,
-      "You are Captain Voss, a gruff, weathered retired sea captain with decades of stories. You speak plainly, use nautical metaphors, and are secretly warm-hearted under a tough exterior.",
-      JSON.stringify(["Male", "Adventure"]));
-  });
-  seed();
-  console.log("Seeded default characters.");
+  try {
+    const seedData = JSON.parse(require("fs").readFileSync(path.join(__dirname, "seed_characters.json"), "utf8"));
+    const insert = db.prepare(
+      "INSERT INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    );
+    const seed = db.transaction(() => {
+      for (const c of seedData) {
+        insert.run(crypto.randomUUID(), c.name, c.tagline, c.color, c.photo, c.photoPos ?? 50, c.photoZoom ?? 1.0, c.persona, c.firstMessage, JSON.stringify(c.tags));
+      }
+    });
+    seed();
+    console.log("Seeded", seedData.length, "characters from seed_characters.json.");
+  } catch (e) {
+    console.error("Failed to load seed_characters.json:", e.message);
+  }
 }
+
+// Recover subscriptions from LemonSqueezy on startup
+(async () => {
+  if (!LEMON_API_KEY) return;
+  try {
+    const res = await fetch("https://api.lemonsqueezy.com/v1/subscriptions?filter[status]=active", {
+      headers: { "Authorization": `Bearer ${LEMON_API_KEY}`, "Accept": "application/vnd.api+json" }
+    });
+    const data = await res.json();
+    if (!data?.data) return;
+    for (const sub of data.data) {
+      const attrs = sub.attributes;
+      // Try to find user by lemon_order_id or lemon_subscription_id
+      const existing = db.prepare("SELECT * FROM subscriptions WHERE lemon_order_id = ? OR lemon_subscription_id = ?")
+        .get(sub.id, sub.id);
+      if (existing && existing.tier === "subscriber") continue;
+      // Find by order_id from custom_data
+      if (attrs.first_order_id) {
+        const byOrder = db.prepare("SELECT * FROM subscriptions WHERE lemon_order_id = ?").get(String(attrs.first_order_id));
+        if (byOrder && byOrder.tier !== "subscriber") {
+          const endDate = Date.now() + 90 * 24 * 60 * 60 * 1000;
+          db.prepare("UPDATE subscriptions SET tier = 'subscriber', current_period_end = ?, lemon_subscription_id = ? WHERE user_id = ?")
+            .run(endDate, sub.id, byOrder.user_id);
+          console.log("Recovered subscription for user:", byOrder.user_id);
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Subscription recovery error:", e.message);
+  }
+})();
 
 // ── Rate limiting ─────────────────────────────────────────
 const requestLog = new Map();
@@ -468,6 +501,17 @@ app.post("/api/subscription/toggle-longer", (req, res) => {
   const newVal = sub?.longer_messages ? 0 : 1;
   db.prepare("UPDATE subscriptions SET longer_messages = ? WHERE user_id = ?").run(newVal, userId);
   res.json({ longer_messages: newVal === 1 });
+});
+
+app.post("/api/subscription/fix", requireAdmin, (req, res) => {
+  const { userId } = req.body;
+  if (!userId) return res.status(400).json({ error: "Missing userId" });
+  const endDate = Date.now() + 90 * 24 * 60 * 60 * 1000;
+  db.prepare(`INSERT INTO subscriptions (user_id, tier, current_period_end, created_at)
+    VALUES (?, 'subscriber', ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET tier = 'subscriber', current_period_end = ?`)
+    .run(userId, endDate, Date.now(), endDate);
+  res.json({ ok: true, tier: "subscriber" });
 });
 
 
