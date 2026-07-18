@@ -3,6 +3,7 @@ sceneai.db
 sceneai.db-shm
 sceneai.db-wal
 sceneai.db.backup.json
+sceneai_backup.json
 .env
 check_db.js
 .agents/
