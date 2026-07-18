@@ -1064,6 +1064,7 @@ function showGallery() {
   galleryView.hidden = false;
   setTab("home");
   renderGallery();
+  document.querySelector(".app").classList.remove("chat-active");
   document.querySelector(".main-content").scrollTop = savedGalleryScroll;
 }
 
@@ -1078,6 +1079,7 @@ function showRecentChats() {
   groupChatsView.hidden = true;
   recentChatsView.hidden = false;
   setTab("chats");
+  document.querySelector(".app").classList.remove("chat-active");
   renderRecentGallery();
 }
 
@@ -1092,6 +1094,7 @@ function showFavorites() {
   groupChatsView.hidden = true;
   favoritesView.hidden = false;
   setTab("favorites");
+  document.querySelector(".app").classList.remove("chat-active");
   renderFavoritesGallery();
 }
 
@@ -1106,6 +1109,7 @@ function showTrending() {
   groupChatsView.hidden = true;
   trendingView.hidden = false;
   setTab("trending");
+  document.querySelector(".app").classList.remove("chat-active");
   renderTrendingGallery();
 }
 
@@ -1120,6 +1124,7 @@ function showMostLiked() {
   groupChatsView.hidden = true;
   mostLikedView.hidden = false;
   setTab("mostLiked");
+  document.querySelector(".app").classList.remove("chat-active");
   renderMostLikedGallery();
 }
 
@@ -1151,6 +1156,7 @@ async function openChat(id) {
   recentChatsView.hidden = true;
   chatView.hidden = false;
   setTab(null);
+  document.querySelector(".app").classList.add("chat-active");
   currentMessages = await loadMessages(id);
   renderMessages();
   input.value = "";
@@ -2027,6 +2033,7 @@ function showGroupChats() {
   groupChatView.hidden = true;
   groupChatsView.hidden = false;
   setTab("groupChats");
+  document.querySelector(".app").classList.remove("chat-active");
   renderGroupChatsGallery();
 }
 
