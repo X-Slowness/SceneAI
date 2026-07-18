@@ -76,16 +76,6 @@ app.get("/api/admin/check", (req, res) => {
   res.json({ admin: userId === ADMIN_USER_ID });
 });
 
-// Debug: check DB path and volume status
-app.get("/api/debug", requireAdmin, (req, res) => {
-  const dbExists = fs.existsSync(DB_PATH);
-  const backupExists = fs.existsSync(BACKUP_PATH);
-  const dataDir = path.dirname(DB_PATH);
-  let files = [];
-  try { files = fs.readdirSync(dataDir); } catch(e) {}
-  res.json({ DB_PATH, BACKUP_PATH, dbExists, backupExists, dataDir, files, envDbPath: process.env.DATABASE_PATH || "not set", railwayMount: process.env.RAILWAY_VOLUME_MOUNT_PATH || "not set" });
-});
-
 // Admin: restore data from backup JSON
 app.post("/api/admin/restore", requireAdmin, (req, res) => {
   const data = req.body;
@@ -679,18 +669,6 @@ app.post("/api/subscription/toggle-longer", (req, res) => {
   const newVal = sub?.longer_messages ? 0 : 1;
   db.prepare("UPDATE subscriptions SET longer_messages = ? WHERE user_id = ?").run(newVal, userId);
   res.json({ longer_messages: newVal === 1 });
-});
-
-app.post("/api/subscription/fix", requireAdmin, (req, res) => {
-  const { userId } = req.body;
-  if (!userId) return res.status(400).json({ error: "Missing userId" });
-  const endDate = Date.now() + 90 * 24 * 60 * 60 * 1000;
-  db.prepare(`INSERT INTO subscriptions (user_id, tier, current_period_end, created_at)
-    VALUES (?, 'subscriber', ?, ?)
-    ON CONFLICT(user_id) DO UPDATE SET tier = 'subscriber', current_period_end = ?`)
-    .run(userId, endDate, Date.now(), endDate);
-  saveBackup();
-  res.json({ ok: true, tier: "subscriber" });
 });
 
 
