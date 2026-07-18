@@ -132,6 +132,14 @@ app.post("/api/admin/restore", requireAdmin, (req, res) => {
       }
     });
     restore();
+    // Remove characters that have no messages, no likes, and were not in the backup
+    const backupIds = new Set(data.characters.map(c => c.id));
+    const dupes = db.prepare("SELECT id, name FROM characters WHERE message_count = 0 AND like_count = 0").all();
+    for (const d of dupes) {
+      if (!backupIds.has(d.id)) {
+        db.prepare("DELETE FROM characters WHERE id = ?").run(d.id);
+      }
+    }
     db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id)`);
     db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WHERE messages.character_id = characters.id)`);
     saveBackup();
