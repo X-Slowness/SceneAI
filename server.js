@@ -184,6 +184,12 @@ db.exec(`
     longer_messages INTEGER DEFAULT 0,
     created_at INTEGER NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS user_profiles (
+    user_id TEXT PRIMARY KEY,
+    username TEXT,
+    picture TEXT,
+    created_at INTEGER NOT NULL
+  );
 `);
 
 try { db.exec("ALTER TABLE characters ADD COLUMN photo_pos INTEGER DEFAULT 50"); } catch(e) {}
@@ -242,6 +248,10 @@ if (charCount === 0) {
           for (const gm of (data.group_chat_members || [])) {
             db.prepare("INSERT OR IGNORE INTO group_chat_members (group_id, character_id) VALUES (?, ?)")
               .run(gm.group_id, gm.character_id);
+          }
+          for (const p of (data.user_profiles || [])) {
+            db.prepare("INSERT OR REPLACE INTO user_profiles (user_id, username, picture, created_at) VALUES (?, ?, ?, ?)")
+              .run(p.user_id, p.username, p.picture, p.created_at);
           }
         });
         restore();
@@ -343,6 +353,21 @@ app.post("/api/auth/google", async (req, res) => {
     console.error("Google auth error:", err);
     res.status(500).json({ error: "Auth verification failed." });
   }
+});
+
+// ── User Profile (synced across devices) ──────────────────
+app.get("/api/profile/:userId", (req, res) => {
+  const row = db.prepare("SELECT * FROM user_profiles WHERE user_id = ?").get(req.params.userId);
+  res.json(row || { user_id: req.params.userId, username: null, picture: null });
+});
+
+app.put("/api/profile/:userId", (req, res) => {
+  const { username, picture } = req.body;
+  const now = Date.now();
+  db.prepare(`INSERT INTO user_profiles (user_id, username, picture, created_at) VALUES (?, ?, ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET username = excluded.username, picture = excluded.picture`).run(req.params.userId, username || null, picture || null, now);
+  saveBackup();
+  res.json({ ok: true });
 });
 
 // ── Characters CRUD ───────────────────────────────────────
@@ -1006,6 +1031,7 @@ function saveBackup() {
       memories: db.prepare("SELECT * FROM memories").all(),
       group_chats: db.prepare("SELECT * FROM group_chats").all(),
       group_chat_members: db.prepare("SELECT * FROM group_chat_members").all(),
+      user_profiles: db.prepare("SELECT * FROM user_profiles").all(),
       saved_at: Date.now()
     };
     fs.writeFileSync(BACKUP_PATH, JSON.stringify(data));

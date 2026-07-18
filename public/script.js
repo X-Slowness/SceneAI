@@ -1603,19 +1603,20 @@ function handleOAuthRedirect() {
     if (data.id) {
       currentUser = { id: data.id, name: data.name, email: data.email, picture: data.picture };
       localStorage.setItem("sceneai_user", JSON.stringify(currentUser));
-      loadProfileData();
-      settings = loadSettings();
-      applyTheme(settings.theme);
-      applyMsgColor(settings.msgColor || "#c9952c");
-      if (!profileData.username) {
-        profileData.username = generateRandomUsername();
-        saveProfileData();
-      }
-      checkAdmin().then(() => checkSubscription().then(() => {
-        applyAdminUI();
-        refreshCharacters();
-        showUserMenu();
-      }));
+      loadProfileData().then(() => {
+        settings = loadSettings();
+        applyTheme(settings.theme);
+        applyMsgColor(settings.msgColor || "#c9952c");
+        if (!profileData.username) {
+          profileData.username = generateRandomUsername();
+          saveProfileData();
+        }
+        checkAdmin().then(() => checkSubscription().then(() => {
+          applyAdminUI();
+          refreshCharacters();
+          showUserMenu();
+        }));
+      });
     }
   })
   .catch(e => console.error("OAuth redirect handling failed:", e));
@@ -1635,8 +1636,20 @@ function getProfileKey() {
   return "sceneai_profile";
 }
 
-function loadProfileData() {
+async function loadProfileData() {
   profileData = JSON.parse(localStorage.getItem(getProfileKey()) || "{}");
+  if (!currentUser || !currentUser.id) return;
+  try {
+    const res = await fetch(`/api/profile/${currentUser.id}`);
+    const serverProfile = await res.json();
+    if (serverProfile && (serverProfile.username || serverProfile.picture)) {
+      profileData.username = serverProfile.username || profileData.username;
+      profileData.picture = serverProfile.picture || profileData.picture;
+      localStorage.setItem(getProfileKey(), JSON.stringify(profileData));
+    }
+  } catch(e) {
+    console.warn("Could not load server profile:", e);
+  }
 }
 
 function saveProfileData() {
@@ -1644,6 +1657,13 @@ function saveProfileData() {
     localStorage.setItem(getProfileKey(), JSON.stringify(profileData));
   } catch(e) {
     console.warn("Could not save profile:", e);
+  }
+  if (currentUser && currentUser.id) {
+    fetch(`/api/profile/${currentUser.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: profileData.username, picture: profileData.picture })
+    }).catch(e => console.warn("Could not sync profile to server:", e));
   }
 }
 
@@ -1697,7 +1717,7 @@ async function handleCredentialResponse(response) {
   };
   localStorage.setItem("sceneai_user", JSON.stringify(currentUser));
 
-  loadProfileData();
+  await loadProfileData();
   settings = loadSettings();
   applyTheme(settings.theme);
   applyMsgColor(settings.msgColor || "#c9952c");
@@ -1828,7 +1848,7 @@ switchAccountBtn.addEventListener("click", () => {
         if (data.id) {
           currentUser = { id: data.id, name: data.name, email: data.email, picture: data.picture };
           localStorage.setItem("sceneai_user", JSON.stringify(currentUser));
-          loadProfileData();
+          await loadProfileData();
           settings = loadSettings();
           applyTheme(settings.theme);
           applyMsgColor(settings.msgColor || "#c9952c");
