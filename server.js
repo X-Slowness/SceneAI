@@ -76,6 +76,16 @@ app.get("/api/admin/check", (req, res) => {
   res.json({ admin: userId === ADMIN_USER_ID });
 });
 
+// Debug: check DB path and volume status
+app.get("/api/debug", requireAdmin, (req, res) => {
+  const dbExists = fs.existsSync(DB_PATH);
+  const backupExists = fs.existsSync(BACKUP_PATH);
+  const dataDir = path.dirname(DB_PATH);
+  let files = [];
+  try { files = fs.readdirSync(dataDir); } catch(e) {}
+  res.json({ DB_PATH, BACKUP_PATH, dbExists, backupExists, dataDir, files, envDbPath: process.env.DATABASE_PATH || "not set" });
+});
+
 // ── Database ──────────────────────────────────────────────
 const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, "sceneai.db");
 const fs = require("fs");
