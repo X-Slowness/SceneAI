@@ -40,6 +40,7 @@ app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }),
           ON CONFLICT(user_id) DO UPDATE SET tier = 'subscriber', lemon_order_id = ?, lemon_subscription_id = ?, current_period_end = ?`)
           .run(userId, order.id, order.id, endDate, Date.now(), order.id, order.id, endDate);
         console.log("Activated subscription for user:", userId);
+        saveBackup();
       } else {
         console.log("No userId found in custom_data");
       }
@@ -358,6 +359,7 @@ app.post("/api/characters", requireAdmin, (req, res) => {
     "INSERT INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   ).run(id, name, tagline || "", color || "#e2b04a", photo || null, photoPos ?? 50, photoZoom ?? 1.0, persona, firstMessage || "", JSON.stringify(tags || []));
   const row = db.prepare("SELECT * FROM characters WHERE id = ?").get(id);
+  saveBackup();
   res.json({ ...row, tags: JSON.parse(row.tags || "[]"), history: [] });
 });
 
@@ -381,6 +383,7 @@ app.put("/api/characters/:id", requireAdmin, (req, res) => {
     req.params.id
   );
   const row = db.prepare("SELECT * FROM characters WHERE id = ?").get(req.params.id);
+  saveBackup();
   res.json({ ...row, tags: JSON.parse(row.tags || "[]"), history: [] });
 });
 
@@ -408,6 +411,7 @@ app.post("/api/characters/:id/like", (req, res) => {
     db.prepare("UPDATE characters SET like_count = like_count + 1 WHERE id = ?").run(req.params.id);
   } catch (e) {}
   const count = db.prepare("SELECT like_count FROM characters WHERE id = ?").get(req.params.id).like_count;
+  saveBackup();
   res.json({ liked: true, like_count: count });
 });
 
@@ -434,6 +438,7 @@ app.post("/api/characters/:id/favorite", (req, res) => {
   try {
     db.prepare("INSERT INTO favorites (character_id, user_id) VALUES (?, ?)").run(req.params.id, userId);
   } catch (e) {}
+  saveBackup();
   res.json({ favorited: true });
 });
 
@@ -469,6 +474,7 @@ app.post("/api/characters/:id/memories", (req, res) => {
     "INSERT INTO memories (character_id, user_id, content, created_at) VALUES (?, ?, ?, ?)"
   );
   const result = stmt.run(req.params.id, userId, content.trim(), Date.now());
+  saveBackup();
   res.json({ id: result.lastInsertRowid, content: content.trim(), created_at: Date.now() });
 });
 
@@ -571,6 +577,7 @@ app.post("/api/subscription/fix", requireAdmin, (req, res) => {
     VALUES (?, 'subscriber', ?, ?)
     ON CONFLICT(user_id) DO UPDATE SET tier = 'subscriber', current_period_end = ?`)
     .run(userId, endDate, Date.now(), endDate);
+  saveBackup();
   res.json({ ok: true, tier: "subscriber" });
 });
 
@@ -817,6 +824,7 @@ app.post("/api/characters/:id/messages", (req, res) => {
   );
   stmt.run(req.params.id, userId, role, content, ts || Date.now());
   db.prepare("UPDATE characters SET message_count = message_count + 1 WHERE id = ?").run(req.params.id);
+  saveBackup();
   res.json({ ok: true });
 });
 
@@ -835,6 +843,7 @@ app.put("/api/characters/:id/messages", (req, res) => {
     }
   });
   replace();
+  saveBackup();
   res.json({ ok: true });
 });
 
@@ -983,8 +992,12 @@ function saveBackup() {
   }
 }
 
-// Auto-save every 5 minutes
-setInterval(saveBackup, 5 * 60 * 1000);
+// Save immediately on startup if DB has data
+const charCount3 = db.prepare("SELECT COUNT(*) as c FROM characters").get().c;
+if (charCount3 > 0) saveBackup();
+
+// Auto-save every 2 minutes
+setInterval(saveBackup, 2 * 60 * 1000);
 
 // Save on exit
 process.on("SIGINT", () => { saveBackup(); process.exit(); });
