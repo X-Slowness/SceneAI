@@ -180,8 +180,9 @@ function renderStreakDays(currentDay, claimedToday) {
 
 async function checkDailyReward() {
   if (!currentUser) return;
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   try {
-    const res = await fetch(`/api/daily-reward/${currentUser.id}`);
+    const res = await fetch(`/api/daily-reward/${currentUser.id}?tz=${encodeURIComponent(tz)}`);
     const data = await res.json();
     if (data.claimable) {
       renderStreakDays(data.streak_day, false);
@@ -193,10 +194,11 @@ async function checkDailyReward() {
 }
 
 claimDailyBtn.addEventListener("click", async () => {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   try {
     const res = await fetch("/api/daily-reward/claim", {
       method: "POST",
-      headers: authHeaders()
+      headers: { ...authHeaders(), "X-Timezone": tz }
     });
     const data = await res.json();
     if (data.ok) {

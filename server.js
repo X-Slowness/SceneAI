@@ -531,8 +531,12 @@ app.post("/api/coins/:userId/add", (req, res) => {
 // ── Daily Login Streak ────────────────────────────────────
 const DAILY_REWARDS = [0, 50, 100, 150, 200, 250, 300, 350]; // index = streak_day
 
-function getTodayStr() {
-  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+function getTodayStr(tz) {
+  try {
+    return new Date().toLocaleDateString("en-CA", { timeZone: tz || "UTC" }); // YYYY-MM-DD
+  } catch(e) {
+    return new Date().toISOString().slice(0, 10);
+  }
 }
 
 function ensureSubRow(userId) {
@@ -545,12 +549,13 @@ function ensureSubRow(userId) {
 
 app.get("/api/daily-reward/:userId", (req, res) => {
   const userId = req.params.userId;
+  const tz = req.query.tz || "UTC";
   ensureSubRow(userId);
   if (userId === ADMIN_USER_ID) {
     return res.json({ claimable: false, streak_day: 7, reward: 0, admin: true });
   }
   const sub = db.prepare("SELECT streak_day, last_claim_date, coins FROM subscriptions WHERE user_id = ?").get(userId);
-  const today = getTodayStr();
+  const today = getTodayStr(tz);
   const lastClaim = sub.last_claim_date || "";
   if (lastClaim === today) {
     return res.json({ claimable: false, streak_day: sub.streak_day, reward: 0, message: "Already claimed today" });
@@ -576,11 +581,12 @@ app.get("/api/daily-reward/:userId", (req, res) => {
 
 app.post("/api/daily-reward/claim", (req, res) => {
   const userId = req.headers["x-user-id"];
+  const tz = req.headers["x-timezone"] || "UTC";
   if (!userId) return res.status(401).json({ error: "Sign in required." });
   if (userId === ADMIN_USER_ID) return res.json({ ok: false, message: "Admin doesn't need rewards" });
   ensureSubRow(userId);
   const sub = db.prepare("SELECT streak_day, last_claim_date, coins FROM subscriptions WHERE user_id = ?").get(userId);
-  const today = getTodayStr();
+  const today = getTodayStr(tz);
   const lastClaim = sub.last_claim_date || "";
   if (lastClaim === today) return res.status(400).json({ error: "Already claimed today." });
   let nextDay;
