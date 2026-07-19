@@ -161,20 +161,35 @@ function updateCreateBtnBadge() {
 // ── Daily Login Streak ────────────────────────────────────
 const REWARDS = [0, 50, 100, 150, 200, 250, 300, 350];
 const dailyRewardModal = document.getElementById("dailyRewardModal");
-const dailyStreakDays = document.getElementById("dailyStreakDays");
+const dailyStreakTrack = document.getElementById("dailyStreakTrack");
 const dailyRewardMsg = document.getElementById("dailyRewardMsg");
+const dailyRewardSubtitle = document.getElementById("dailyRewardSubtitle");
 const claimDailyBtn = document.getElementById("claimDailyRewardBtn");
 const closeDailyBtn = document.getElementById("closeDailyRewardBtn");
 
 function renderStreakDays(currentDay, claimedToday) {
-  dailyStreakDays.innerHTML = "";
+  dailyStreakTrack.innerHTML = "";
   for (let i = 1; i <= 7; i++) {
-    const div = document.createElement("div");
-    div.className = "streak-day";
-    if (claimedToday && i <= currentDay) div.classList.add("claimed");
-    else if (!claimedToday && i === currentDay) div.classList.add("next");
-    div.innerHTML = `<span class="day-num">D${i}</span><span class="day-coins">${REWARDS[i]}</span>`;
-    dailyStreakDays.appendChild(div);
+    const isClaimed = claimedToday && i <= currentDay;
+    const isNext = !claimedToday && i === currentDay;
+    const el = document.createElement("div");
+    el.className = "streak-node" + (isClaimed ? " claimed" : "") + (isNext ? " next" : "");
+    const size = 32 + (i * 4);
+    const reward = REWARDS[i];
+    el.innerHTML = `
+      <div class="node-ring" style="width:${size}px;height:${size}px;">
+        ${isClaimed ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '<span class="node-coin-icon">${reward}</span>'}
+      </div>
+      <span class="node-label">Day ${i}</span>
+    `;
+    if (i < 7) {
+      const line = document.createElement("div");
+      line.className = "streak-line" + (isClaimed ? " filled" : "");
+      dailyStreakTrack.appendChild(el);
+      dailyStreakTrack.appendChild(line);
+    } else {
+      dailyStreakTrack.appendChild(el);
+    }
   }
 }
 
@@ -186,7 +201,9 @@ async function checkDailyReward() {
     const data = await res.json();
     if (data.claimable) {
       renderStreakDays(data.streak_day, false);
-      dailyRewardMsg.textContent = `Day ${data.streak_day} — Claim ${data.reward} coins!`;
+      dailyRewardMsg.textContent = `Log in tomorrow for Day ${data.streak_day + 1 > 7 ? 1 : data.streak_day + 1} — ${REWARDS[data.streak_day + 1 > 7 ? 1 : data.streak_day + 1]} coins!`;
+      dailyRewardSubtitle.textContent = `Day ${data.streak_day} of 7`;
+      claimDailyBtn.textContent = `Claim +${data.reward}`;
       claimDailyBtn.style.display = "";
       dailyRewardModal.showModal();
     }
