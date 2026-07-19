@@ -2076,7 +2076,7 @@ logoutBtn.addEventListener("click", () => {
 });
 
 deleteAccountBtn.addEventListener("click", async () => {
-  if (!(await showConfirm("Delete your account? Your profile and all conversations will be permanently removed."))) return;
+  if (!(await showConfirm("Are you sure you want to delete your account?\n\nYou will permanently lose:\n- Your profile and username\n- All your coins and subscription\n- All your conversations and messages\n- Your favorites, likes, and memories\n- All your group chats\n\nThis cannot be undone."))) return;
   try {
     await fetch(`/api/users/${currentUser.id}/messages`, { method: "DELETE" });
   } catch(e) { console.error("Failed to delete messages:", e); }
