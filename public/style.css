@@ -89,9 +89,6 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
 
 .user-menu {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .user-menu-btn {
@@ -114,6 +111,10 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
 }
 
 .coin-badge {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 4px;

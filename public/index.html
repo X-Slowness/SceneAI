@@ -75,6 +75,10 @@
       <!-- Gallery view -->
       <div id="galleryView">
         <header class="banner">
+          <div id="coinBadge" class="coin-badge" title="Your coins" style="display:none">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5c0-1 1.5-2 3-2s3 1 3 2-1.5 2-3 2-3 1-3 2 1.5 2 3 2 3-1 3-2"/></svg>
+            <span id="coinCount">0</span>
+          </div>
           <div id="authArea" class="auth-area">
             <div id="googleSignInWrapper"><div id="googleSignInBtn"></div></div>
             <div id="userMenu" class="user-menu" hidden>
@@ -82,10 +86,6 @@
                 <img id="userAvatar" class="user-avatar" alt="">
                 <span id="userName" class="user-name"></span>
               </button>
-              <div id="coinBadge" class="coin-badge" title="Your coins">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5c0-1 1.5-2 3-2s3 1 3 2-1.5 2-3 2-3 1-3 2 1.5 2 3 2 3-1 3-2"/></svg>
-                <span id="coinCount">0</span>
-              </div>
             </div>
           </div>
           <div class="banner-inner">
