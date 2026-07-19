@@ -98,7 +98,7 @@ app.post("/api/admin/restore", requireAdmin, (req, res) => {
       for (const c of data.characters) {
         db.prepare(`INSERT OR REPLACE INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, like_count, message_count, created_by)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-          .run(c.id, c.name, c.tagline, c.color, c.photo, c.photo_pos || 50, c.photo_zoom || 1.0, c.persona, c.first_message || "", c.tags || "[]", c.like_count || 0, c.message_count || 0, c.created_by || "");
+          .run(c.id, c.name, c.tagline, c.color, c.photo || null, c.photo_pos || 50, c.photo_zoom || 1.0, c.persona, c.first_message || "", c.tags || "[]", c.like_count || 0, c.message_count || 0, c.created_by || "");
       }
       for (const m of (data.messages || [])) {
         db.prepare("INSERT OR IGNORE INTO messages (id, character_id, user_id, role, content, ts) VALUES (?, ?, ?, ?, ?, ?)")
@@ -316,9 +316,9 @@ if (needsRestore) {
       const stat = fs.statSync(BACKUP_PATH);
       let data;
       if (stat.size > 200000) {
-        console.log("Large backup (" + (stat.size/1024).toFixed(0) + "KB). Stripping photos...");
+        console.log("Large backup (" + (stat.size/1024).toFixed(0) + "KB). Stripping seed character photos...");
         data = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
-        if (data.characters) { for (const c of data.characters) { delete c.photo; } }
+        if (data.characters) { for (const c of data.characters) { if (!c.created_by) delete c.photo; } }
         fs.writeFileSync(BACKUP_PATH, JSON.stringify(data));
       } else {
         data = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
@@ -332,7 +332,7 @@ if (needsRestore) {
         const restore = db.transaction(() => {
           for (const c of data.characters) {
             db.prepare(`INSERT OR REPLACE INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, like_count, message_count, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-              .run(c.id, c.name, c.tagline, c.color, seedPhotos[c.name] || null, c.photo_pos, c.photo_zoom, c.persona, c.first_message, c.tags, c.like_count || 0, c.message_count || 0, c.created_by || "");
+              .run(c.id, c.name, c.tagline, c.color, c.photo || seedPhotos[c.name] || null, c.photo_pos, c.photo_zoom, c.persona, c.first_message, c.tags, c.like_count || 0, c.message_count || 0, c.created_by || "");
           }
           for (const m of (data.messages || [])) {
             db.prepare("INSERT OR IGNORE INTO messages (id, character_id, user_id, role, content, ts) VALUES (?, ?, ?, ?, ?, ?)").run(m.id, m.character_id, m.user_id, m.role, m.content, m.ts);
@@ -1349,6 +1349,7 @@ app.listen(PORT, () => {
 function saveBackup() {
   try {
     const chars = db.prepare("SELECT * FROM characters").all().map(c => {
+      if (c.created_by) return c;
       const { photo, ...rest } = c;
       return rest;
     });
