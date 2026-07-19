@@ -158,6 +158,62 @@ function updateCreateBtnBadge() {
   });
 }
 
+// ── Daily Login Streak ────────────────────────────────────
+const REWARDS = [0, 50, 100, 150, 200, 250, 300, 350];
+const dailyRewardModal = document.getElementById("dailyRewardModal");
+const dailyStreakDays = document.getElementById("dailyStreakDays");
+const dailyRewardMsg = document.getElementById("dailyRewardMsg");
+const claimDailyBtn = document.getElementById("claimDailyRewardBtn");
+const closeDailyBtn = document.getElementById("closeDailyRewardBtn");
+
+function renderStreakDays(currentDay, claimedToday) {
+  dailyStreakDays.innerHTML = "";
+  for (let i = 1; i <= 7; i++) {
+    const div = document.createElement("div");
+    div.className = "streak-day";
+    if (claimedToday && i <= currentDay) div.classList.add("claimed");
+    else if (!claimedToday && i === currentDay) div.classList.add("next");
+    div.innerHTML = `<span class="day-num">D${i}</span><span class="day-coins">${REWARDS[i]}</span>`;
+    dailyStreakDays.appendChild(div);
+  }
+}
+
+async function checkDailyReward() {
+  if (!currentUser) return;
+  try {
+    const res = await fetch(`/api/daily-reward/${currentUser.id}`);
+    const data = await res.json();
+    if (data.claimable) {
+      renderStreakDays(data.streak_day, false);
+      dailyRewardMsg.textContent = `Day ${data.streak_day} — Claim ${data.reward} coins!`;
+      claimDailyBtn.style.display = "";
+      dailyRewardModal.showModal();
+    }
+  } catch(e) {}
+}
+
+claimDailyBtn.addEventListener("click", async () => {
+  try {
+    const res = await fetch("/api/daily-reward/claim", {
+      method: "POST",
+      headers: authHeaders()
+    });
+    const data = await res.json();
+    if (data.ok) {
+      renderStreakDays(data.streak_day, true);
+      dailyRewardMsg.textContent = `+${data.reward} coins! Total: ${data.total_coins}`;
+      claimDailyBtn.style.display = "none";
+      coinInfo.coins = data.total_coins;
+      const coinCount = document.getElementById("coinCount");
+      if (coinCount) coinCount.textContent = data.total_coins;
+      updateCreateBtnBadge();
+    }
+  } catch(e) {}
+});
+
+closeDailyBtn.addEventListener("click", () => dailyRewardModal.close());
+dailyRewardModal.addEventListener("click", (e) => { if (e.target === dailyRewardModal) dailyRewardModal.close(); });
+
 async function createCharacter(data) {
   const res = await fetch("/api/characters", {
     method: "POST",
@@ -1667,6 +1723,7 @@ function handleOAuthRedirect() {
           applyAdminUI();
           refreshCharacters();
           showUserMenu();
+          checkDailyReward();
         }));
       });
     }
@@ -2326,6 +2383,7 @@ async function init() {
   if (currentUser) {
     loadProfileData();
     showUserMenu();
+    checkDailyReward();
   }
   initGoogleSignIn();
 }

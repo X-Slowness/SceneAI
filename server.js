@@ -262,6 +262,8 @@ try { db.exec("ALTER TABLE subscriptions RENAME COLUMN stripe_subscription_id TO
 // Add coins system columns
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN coins INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN free_characters_used INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN streak_day INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN last_claim_date TEXT DEFAULT ''"); } catch(e) {}
 
 // Seed like_count from likes table for any characters that have 0 but should have more
 db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id) WHERE like_count = 0 AND id IN (SELECT character_id FROM likes)`);
@@ -524,6 +526,84 @@ app.post("/api/coins/:userId/add", (req, res) => {
   saveBackup();
   const row = db.prepare("SELECT coins FROM subscriptions WHERE user_id = ?").get(req.params.userId);
   res.json({ ok: true, coins: row.coins });
+});
+
+// ── Daily Login Streak ────────────────────────────────────
+const DAILY_REWARDS = [0, 50, 100, 150, 200, 250, 300, 350]; // index = streak_day
+
+function getTodayStr() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function ensureSubRow(userId) {
+  const existing = db.prepare("SELECT user_id FROM subscriptions WHERE user_id = ?").get(userId);
+  if (!existing) {
+    db.prepare("INSERT INTO subscriptions (user_id, tier, streak_day, last_claim_date, created_at) VALUES (?, 'free', 0, '', ?)")
+      .run(userId, Date.now());
+  }
+}
+
+app.get("/api/daily-reward/:userId", (req, res) => {
+  const userId = req.params.userId;
+  ensureSubRow(userId);
+  if (userId === ADMIN_USER_ID) {
+    return res.json({ claimable: false, streak_day: 7, reward: 0, admin: true });
+  }
+  const sub = db.prepare("SELECT streak_day, last_claim_date, coins FROM subscriptions WHERE user_id = ?").get(userId);
+  const today = getTodayStr();
+  const lastClaim = sub.last_claim_date || "";
+  if (lastClaim === today) {
+    return res.json({ claimable: false, streak_day: sub.streak_day, reward: 0, message: "Already claimed today" });
+  }
+  let nextDay;
+  if (!lastClaim) {
+    nextDay = 1;
+  } else {
+    const last = new Date(lastClaim);
+    const now = new Date(today);
+    const diffDays = Math.round((now - last) / 86400000);
+    if (diffDays === 1) {
+      nextDay = sub.streak_day >= 7 ? 1 : sub.streak_day + 1;
+    } else if (diffDays > 1) {
+      nextDay = 1;
+    } else {
+      return res.json({ claimable: false, streak_day: sub.streak_day, reward: 0 });
+    }
+  }
+  const reward = DAILY_REWARDS[nextDay] || 50;
+  res.json({ claimable: true, streak_day: nextDay, reward, coins: sub.coins });
+});
+
+app.post("/api/daily-reward/claim", (req, res) => {
+  const userId = req.headers["x-user-id"];
+  if (!userId) return res.status(401).json({ error: "Sign in required." });
+  if (userId === ADMIN_USER_ID) return res.json({ ok: false, message: "Admin doesn't need rewards" });
+  ensureSubRow(userId);
+  const sub = db.prepare("SELECT streak_day, last_claim_date, coins FROM subscriptions WHERE user_id = ?").get(userId);
+  const today = getTodayStr();
+  const lastClaim = sub.last_claim_date || "";
+  if (lastClaim === today) return res.status(400).json({ error: "Already claimed today." });
+  let nextDay;
+  if (!lastClaim) {
+    nextDay = 1;
+  } else {
+    const last = new Date(lastClaim);
+    const now = new Date(today);
+    const diffDays = Math.round((now - last) / 86400000);
+    if (diffDays === 1) {
+      nextDay = sub.streak_day >= 7 ? 1 : sub.streak_day + 1;
+    } else if (diffDays > 1) {
+      nextDay = 1;
+    } else {
+      return res.status(400).json({ error: "Cannot claim yet." });
+    }
+  }
+  const reward = DAILY_REWARDS[nextDay] || 50;
+  db.prepare("UPDATE subscriptions SET coins = coins + ?, streak_day = ?, last_claim_date = ? WHERE user_id = ?")
+    .run(reward, nextDay, today, userId);
+  saveBackup();
+  const updated = db.prepare("SELECT coins, streak_day FROM subscriptions WHERE user_id = ?").get(userId);
+  res.json({ ok: true, streak_day: nextDay, reward, total_coins: updated.coins });
 });
 
 // Create character (admin = free, subscriber = free, free user = 10 free then 200 coins)
