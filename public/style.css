@@ -89,6 +89,9 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
 
 .user-menu {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .user-menu-btn {
