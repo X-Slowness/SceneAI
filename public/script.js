@@ -121,19 +121,15 @@ async function fetchCoinInfo() {
     document.getElementById("coinBadge").style.display = "none";
     return;
   }
-  console.log("FETCHING COINS FOR USER:", currentUser.id);
   try {
     const res = await fetch(`/api/coins/${currentUser.id}?_t=${Date.now()}`);
-    const raw = await res.json();
-    console.log("RAW COIN RESPONSE:", JSON.stringify(raw));
-    if (res.ok) coinInfo = raw;
-  } catch(e) { console.error("COIN FETCH ERROR:", e); }
+    if (res.ok) coinInfo = await res.json();
+  } catch(e) {}
   const coinBadge = document.getElementById("coinBadge");
   const coinCount = document.getElementById("coinCount");
   if (coinBadge && coinCount) {
     coinBadge.style.display = "flex";
     coinCount.textContent = coinInfo.coins || 0;
-    console.log("COIN DISPLAY:", coinInfo.coins);
   }
 }
 function updateCreateBtnBadge() {
