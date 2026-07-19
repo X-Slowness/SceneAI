@@ -117,11 +117,20 @@ function applyAdminUI() {
 
 let coinInfo = { coins: 0, free_remaining: 10, is_subscriber: false };
 async function fetchCoinInfo() {
-  if (!currentUser) return;
+  if (!currentUser) {
+    document.getElementById("coinBadge").style.display = "none";
+    return;
+  }
   try {
     const res = await fetch(`/api/coins/${currentUser.id}`);
     if (res.ok) coinInfo = await res.json();
   } catch(e) {}
+  const coinBadge = document.getElementById("coinBadge");
+  const coinCount = document.getElementById("coinCount");
+  if (coinBadge && coinCount) {
+    coinBadge.style.display = "flex";
+    coinCount.textContent = coinInfo.coins || 0;
+  }
 }
 function updateCreateBtnBadge() {
   fetchCoinInfo().then(() => {

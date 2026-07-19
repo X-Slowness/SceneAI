@@ -110,6 +110,21 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
   box-shadow: 0 0 15px rgba(201,149,44,0.15);
 }
 
+.coin-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f59e0b;
+  cursor: default;
+  white-space: nowrap;
+}
+
 .user-avatar {
   width: 28px;
   height: 28px;
