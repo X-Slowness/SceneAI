@@ -716,6 +716,7 @@ function isLongerMessages(userId) {
 app.get("/api/subscription/status", (req, res) => {
   const userId = req.query.userId;
   if (!userId) return res.json({ tier: "free" });
+  if (userId === ADMIN_USER_ID) return res.json({ tier: "subscriber", longer_messages: true });
   const sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
   if (!sub) return res.json({ tier: "free", longer_messages: false });
   const active = sub.tier !== "free" && (!sub.current_period_end || sub.current_period_end > Date.now());

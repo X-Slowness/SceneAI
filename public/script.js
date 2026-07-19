@@ -91,9 +91,9 @@ async function checkSubscription() {
   try {
     const res = await fetch(`/api/subscription/status?userId=${currentUser.id}`);
     const data = await res.json();
-    isSubscriber = data.tier === "subscriber";
+    isSubscriber = data.tier === "subscriber" || isAdmin;
     longerMessages = data.longer_messages || false;
-  } catch(e) { isSubscriber = false; longerMessages = false; }
+  } catch(e) { isSubscriber = isAdmin; longerMessages = false; }
 }
 
 function applyAdminUI() {
