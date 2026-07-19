@@ -129,6 +129,122 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
   white-space: nowrap;
 }
 
+.buy-coins-add {
+  position: absolute;
+  top: 20px;
+  left: 156px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(245,158,11,0.4);
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+.buy-coins-add:hover {
+  background: rgba(245,158,11,0.3);
+  box-shadow: 0 0 12px rgba(245,158,11,0.3);
+  transform: scale(1.1);
+}
+
+/* Buy Coins Modal */
+.buy-coins-modal {
+  border: 1px solid rgba(245,158,11,0.3);
+  background: var(--card);
+}
+.buy-coins-content {
+  text-align: center;
+  padding: 10px;
+}
+.buy-coins-title {
+  margin: 0 0 4px;
+  font-size: 20px;
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.buy-coins-subtitle {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.coin-packages {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.coin-package {
+  position: relative;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: rgba(15,14,17,0.6);
+  padding: 16px 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  color: var(--text);
+  font-family: inherit;
+}
+.coin-package:hover {
+  border-color: #f59e0b;
+  background: rgba(245,158,11,0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245,158,11,0.15);
+}
+.coin-package.popular {
+  border-color: rgba(245,158,11,0.4);
+}
+.coin-package.best {
+  border-color: #f59e0b;
+  background: rgba(245,158,11,0.08);
+}
+.pkg-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.best-badge {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+.pkg-coins {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1;
+}
+.pkg-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.pkg-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
 .user-avatar {
   width: 28px;
   height: 28px;

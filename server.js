@@ -31,16 +31,27 @@ app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }),
     console.log("WEBHOOK RECEIVED:", event.meta?.event_name);
     if (event.meta?.event_name === "order_created") {
       const order = event.data;
-      const userId = event.meta?.custom_data?.userId || event.meta?.custom_data?.user_id;
-      console.log("Order userId:", userId, "custom_data:", JSON.stringify(event.meta?.custom_data));
+      const custom = event.meta?.custom_data || {};
+      const userId = custom.userId || custom.user_id;
+      console.log("Order userId:", userId, "custom_data:", JSON.stringify(custom));
       if (userId) {
-        const endDate = Date.now() + 30 * 24 * 60 * 60 * 1000;
-        db.prepare(`INSERT INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, created_at)
-          VALUES (?, 'subscriber', ?, ?, ?, ?)
-          ON CONFLICT(user_id) DO UPDATE SET tier = 'subscriber', lemon_order_id = ?, lemon_subscription_id = ?, current_period_end = ?`)
-          .run(userId, order.id, order.id, endDate, Date.now(), order.id, order.id, endDate);
-        console.log("Activated subscription for user:", userId);
-        saveBackup();
+        if (custom.type === "coin_purchase" && custom.variantId) {
+          const pkg = COIN_PACKAGES[parseInt(custom.variantId)];
+          if (pkg) {
+            ensureSubRow(userId);
+            db.prepare("UPDATE subscriptions SET coins = coins + ? WHERE user_id = ?").run(pkg.coins, userId);
+            console.log(`Added ${pkg.coins} coins to user ${userId}`);
+            saveBackup();
+          }
+        } else {
+          const endDate = Date.now() + 30 * 24 * 60 * 60 * 1000;
+          db.prepare(`INSERT INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, created_at)
+            VALUES (?, 'subscriber', ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET tier = 'subscriber', lemon_order_id = ?, lemon_subscription_id = ?, current_period_end = ?`)
+            .run(userId, order.id, order.id, endDate, Date.now(), order.id, order.id, endDate);
+          console.log("Activated subscription for user:", userId);
+          saveBackup();
+        }
       } else {
         console.log("No userId found in custom_data");
       }
@@ -850,6 +861,59 @@ app.post("/api/subscription/checkout", async (req, res) => {
     }
   } catch (err) {
     console.error("LemonSqueezy checkout error:", err);
+    res.status(500).json({ error: "Failed to create checkout." });
+  }
+});
+
+// ── Coin Packages ─────────────────────────────────────────
+const COIN_PACKAGES = {
+  1924403: { coins: 400, label: "400 Coins" },
+  1924420: { coins: 1000, label: "1,000 Coins" },
+  1924421: { coins: 2000, label: "2,000 Coins" },
+  1924422: { coins: 3250, label: "3,250 Coins (+250 bonus)" }
+};
+
+app.post("/api/coins/checkout", async (req, res) => {
+  const userId = req.headers["x-user-id"];
+  const { variantId } = req.body;
+  if (!userId) return res.status(401).json({ error: "Sign in required." });
+  if (!variantId || !COIN_PACKAGES[variantId]) return res.status(400).json({ error: "Invalid package." });
+  if (!LEMON_API_KEY || !LEMON_STORE_ID) return res.status(500).json({ error: "Payment not configured." });
+  try {
+    const checkoutRes = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${LEMON_API_KEY}`,
+        "Content-Type": "application/vnd.api+json",
+        "Accept": "application/vnd.api+json"
+      },
+      body: JSON.stringify({
+        data: {
+          type: "checkouts",
+          attributes: {
+            checkout_data: {
+              custom: { userId, type: "coin_purchase", variantId: String(variantId) }
+            },
+            product_options: {
+              redirect_url: SITE_URL + "?payment=success"
+            }
+          },
+          relationships: {
+            store: { data: { type: "stores", id: LEMON_STORE_ID } },
+            variant: { data: { type: "variants", id: String(variantId) } }
+          }
+        }
+      })
+    });
+    const data = await checkoutRes.json();
+    if (data?.data?.attributes?.url) {
+      res.json({ url: data.data.attributes.url });
+    } else {
+      console.error("Coin checkout error:", data);
+      res.status(500).json({ error: "Failed to create checkout." });
+    }
+  } catch (err) {
+    console.error("Coin checkout error:", err);
     res.status(500).json({ error: "Failed to create checkout." });
   }
 });

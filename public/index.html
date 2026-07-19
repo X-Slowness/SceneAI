@@ -75,10 +75,11 @@
       <!-- Gallery view -->
       <div id="galleryView">
         <header class="banner">
-          <div id="coinBadge" class="coin-badge" title="Your coins" style="display:none">
+          <div id="coinBadge" class="coin-badge" title="Your coins">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5c0-1 1.5-2 3-2s3 1 3 2-1.5 2-3 2-3 1-3 2 1.5 2 3 2 3-1 3-2"/></svg>
             <span id="coinCount">0</span>
           </div>
+          <button id="buyCoinsBtn" class="buy-coins-add" title="Buy coins">+</button>
           <div id="authArea" class="auth-area">
             <div id="googleSignInWrapper"><div id="googleSignInBtn"></div></div>
             <div id="userMenu" class="user-menu" hidden>
@@ -396,6 +397,40 @@
       <div class="modal-actions">
         <button type="button" id="claimDailyRewardBtn" class="claim-btn">Claim +50</button>
         <button type="button" id="closeDailyRewardBtn" class="close-reward-btn">Maybe later</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="buyCoinsModal" class="buy-coins-modal">
+    <div class="buy-coins-content">
+      <h3 class="buy-coins-title">Buy Coins</h3>
+      <p class="buy-coins-subtitle">Choose a package to get more coins</p>
+      <div class="coin-packages">
+        <button class="coin-package" data-variant="1924403" data-coins="400">
+          <div class="pkg-coins">400</div>
+          <div class="pkg-label">coins</div>
+          <div class="pkg-price">$1.99</div>
+        </button>
+        <button class="coin-package" data-variant="1924420" data-coins="1000">
+          <div class="pkg-coins">1,000</div>
+          <div class="pkg-label">coins</div>
+          <div class="pkg-price">$3.99</div>
+        </button>
+        <button class="coin-package popular" data-variant="1924421" data-coins="2000">
+          <div class="pkg-badge">Popular</div>
+          <div class="pkg-coins">2,000</div>
+          <div class="pkg-label">coins</div>
+          <div class="pkg-price">$6.99</div>
+        </button>
+        <button class="coin-package best" data-variant="1924422" data-coins="3250">
+          <div class="pkg-badge best-badge">+250 Bonus</div>
+          <div class="pkg-coins">3,250</div>
+          <div class="pkg-label">coins</div>
+          <div class="pkg-price">$9.99</div>
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="closeBuyCoinsBtn" class="close-reward-btn">Close</button>
       </div>
     </div>
   </dialog>

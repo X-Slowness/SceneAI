@@ -233,6 +233,38 @@ claimDailyBtn.addEventListener("click", async () => {
 closeDailyBtn.addEventListener("click", () => dailyRewardModal.close());
 dailyRewardModal.addEventListener("click", (e) => { if (e.target === dailyRewardModal) dailyRewardModal.close(); });
 
+// ── Buy Coins ─────────────────────────────────────────────
+const buyCoinsModal = document.getElementById("buyCoinsModal");
+const closeBuyCoinsBtn = document.getElementById("closeBuyCoinsBtn");
+
+document.getElementById("buyCoinsBtn").addEventListener("click", () => {
+  if (!currentUser) { document.getElementById("signInRequiredModal").showModal(); return; }
+  buyCoinsModal.showModal();
+});
+closeBuyCoinsBtn.addEventListener("click", () => buyCoinsModal.close());
+buyCoinsModal.addEventListener("click", (e) => { if (e.target === buyCoinsModal) buyCoinsModal.close(); });
+
+document.querySelectorAll(".coin-package").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const variantId = parseInt(btn.dataset.variant);
+    try {
+      const res = await fetch("/api/coins/checkout", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ variantId })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showAlert("Error", data.error || "Failed to start checkout.");
+      }
+    } catch(e) {
+      showAlert("Error", "Failed to start checkout.");
+    }
+  });
+});
+
 async function createCharacter(data) {
   const res = await fetch("/api/characters", {
     method: "POST",
