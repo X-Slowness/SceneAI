@@ -122,7 +122,7 @@ async function fetchCoinInfo() {
     return;
   }
   try {
-    const res = await fetch(`/api/coins/${currentUser.id}`);
+    const res = await fetch(`/api/coins/${currentUser.id}?_t=${Date.now()}`);
     if (res.ok) coinInfo = await res.json();
   } catch(e) {}
   const coinBadge = document.getElementById("coinBadge");
@@ -230,8 +230,8 @@ claimDailyBtn.addEventListener("click", async () => {
   } catch(e) {}
 });
 
-closeDailyBtn.addEventListener("click", () => dailyRewardModal.close());
-dailyRewardModal.addEventListener("click", (e) => { if (e.target === dailyRewardModal) dailyRewardModal.close(); });
+closeDailyBtn.addEventListener("click", () => { dailyRewardModal.close(); fetchCoinInfo(); });
+dailyRewardModal.addEventListener("click", (e) => { if (e.target === dailyRewardModal) { dailyRewardModal.close(); fetchCoinInfo(); } });
 
 // ── Buy Coins ─────────────────────────────────────────────
 const buyCoinsModal = document.getElementById("buyCoinsModal");
