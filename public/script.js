@@ -270,6 +270,7 @@ document.getElementById("buyCoinsBtn").addEventListener("click", () => {
 });
 closeBuyCoinsBtn.addEventListener("click", () => buyCoinsModal.close());
 buyCoinsModal.addEventListener("click", (e) => { if (e.target === buyCoinsModal) buyCoinsModal.close(); });
+buyCoinsModal.addEventListener("close", () => { buyCoinsModal.querySelector(".buy-coins-title").textContent = "Buy Coins"; });
 
 document.querySelectorAll(".coin-package").forEach(btn => {
   btn.addEventListener("click", async () => {
@@ -912,7 +913,8 @@ characterForm.addEventListener("submit", async () => {
     console.error("Save character failed:", e);
     const msg = e.message || "";
     if (msg.includes("200 coins") || msg.includes("No free uses")) {
-      showAlert("No Coins", "You've used all 10 free character creations. You need 200 coins to create more characters.");
+      buyCoinsModal.querySelector(".buy-coins-title").textContent = "Not Enough Coins";
+      buyCoinsModal.showModal();
     } else if (e.message === "Permission denied") {
       showAlert("Error", "You don't have permission to edit the character.");
     } else {
