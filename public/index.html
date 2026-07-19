@@ -39,6 +39,10 @@
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Group Chats
         </button>
+        <button id="myCharactersBtn" class="nav-btn" title="Characters you created">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          My Characters
+        </button>
         <button id="trendingBtn" class="nav-btn" title="Trending characters">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
           Trending
@@ -181,6 +185,19 @@
             New Group Chat
           </button>
           <div id="groupChatsGallery" class="gallery"></div>
+        </section>
+      </div>
+
+      <!-- My Characters view -->
+      <div id="myCharactersView" hidden>
+        <header class="banner banner-sm">
+          <div class="banner-inner">
+            <h1 class="wordmark">My Characters</h1>
+            <p class="banner-tag">Characters you've created. Click to edit.</p>
+          </div>
+        </header>
+        <section class="gallery-section">
+          <div id="myCharactersGallery" class="gallery"></div>
         </section>
       </div>
 

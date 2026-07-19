@@ -683,10 +683,14 @@ app.post("/api/characters", (req, res) => {
 });
 
 // Update character (admin only)
-app.put("/api/characters/:id", requireAdmin, (req, res) => {
+app.put("/api/characters/:id", (req, res) => {
+  const userId = req.headers["x-user-id"];
   const { name, tagline, color, photo, photoPos, photoZoom, persona, firstMessage, tags } = req.body;
   const existing = db.prepare("SELECT * FROM characters WHERE id = ?").get(req.params.id);
   if (!existing) return res.status(404).json({ error: "Not found." });
+  if (userId !== ADMIN_USER_ID && existing.created_by !== userId) {
+    return res.status(403).json({ error: "You can only edit your own characters." });
+  }
   db.prepare(
     "UPDATE characters SET name=?, tagline=?, color=?, photo=?, photo_pos=?, photo_zoom=?, persona=?, first_message=?, tags=? WHERE id=?"
   ).run(

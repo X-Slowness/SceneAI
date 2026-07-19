@@ -471,15 +471,18 @@ const recentChatsView = document.getElementById("recentChatsView");
 const favoritesView = document.getElementById("favoritesView");
 const trendingView = document.getElementById("trendingView");
 const mostLikedView = document.getElementById("mostLikedView");
+const myCharactersView = document.getElementById("myCharactersView");
 const chatView = document.getElementById("chatView");
 const galleryEl = document.getElementById("gallery");
 const recentChatsGalleryEl = document.getElementById("recentChatsGallery");
 const favoritesGalleryEl = document.getElementById("favoritesGallery");
 const trendingGalleryEl = document.getElementById("trendingGallery");
 const mostLikedGalleryEl = document.getElementById("mostLikedGallery");
+const myCharactersGalleryEl = document.getElementById("myCharactersGallery");
 const homeNavBtn = document.getElementById("homeNavBtn");
 const recentChatsBtn = document.getElementById("recentChatsBtn");
 const favoritesBtn = document.getElementById("favoritesBtn");
+const myCharactersBtn = document.getElementById("myCharactersBtn");
 const trendingBtn = document.getElementById("trendingBtn");
 const mostLikedBtn = document.getElementById("mostLikedBtn");
 
@@ -1042,11 +1045,12 @@ function buildCard(c, { showSnippet } = {}) {
   const likeCount = c.like_count || 0;
   const isLiked = c.liked ? " liked" : "";
   const isFav = c.favorited ? " favorited" : "";
+  const canEdit = currentUser && (isAdmin || c.created_by === currentUser.id);
   card.innerHTML = `
     <button class="card-fav${isFav}" title="Toggle favorite" aria-label="Toggle favorite for ${escapeHtml(c.name)}">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="${c.favorited ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
     </button>
-    <button class="card-edit" title="Edit ${escapeHtml(c.name)}" aria-label="Edit ${escapeHtml(c.name)}">${editIconSvg()}</button>
+    ${canEdit ? `<button class="card-edit" title="Edit ${escapeHtml(c.name)}" aria-label="Edit ${escapeHtml(c.name)}">${editIconSvg()}</button>` : ""}
     <button class="card-details" title="View details" aria-label="View details for ${escapeHtml(c.name)}">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
     </button>
@@ -1066,10 +1070,13 @@ function buildCard(c, { showSnippet } = {}) {
     </div>
   `;
   card.addEventListener("click", () => openChat(c.id));
-  card.querySelector(".card-edit").addEventListener("click", (e) => {
-    e.stopPropagation();
-    openEditModal(c);
-  });
+  const editBtn = card.querySelector(".card-edit");
+  if (editBtn) {
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openEditModal(c);
+    });
+  }
   card.querySelector(".card-details").addEventListener("click", (e) => {
     e.stopPropagation();
     openCharInfo(c);
@@ -1230,6 +1237,7 @@ function setTab(tab) {
   homeNavBtn.classList.toggle("active", tab === "home");
   recentChatsBtn.classList.toggle("active", tab === "chats");
   favoritesBtn.classList.toggle("active", tab === "favorites");
+  myCharactersBtn.classList.toggle("active", tab === "myCharacters");
   trendingBtn.classList.toggle("active", tab === "trending");
   mostLikedBtn.classList.toggle("active", tab === "mostLiked");
   groupChatsBtn.classList.toggle("active", tab === "groupChats");
@@ -1246,6 +1254,7 @@ function showGallery() {
   favoritesView.hidden = true;
   trendingView.hidden = true;
   mostLikedView.hidden = true;
+  myCharactersView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   galleryView.hidden = false;
@@ -1262,6 +1271,7 @@ function showRecentChats() {
   favoritesView.hidden = true;
   trendingView.hidden = true;
   mostLikedView.hidden = true;
+  myCharactersView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   recentChatsView.hidden = false;
@@ -1277,6 +1287,7 @@ function showFavorites() {
   recentChatsView.hidden = true;
   trendingView.hidden = true;
   mostLikedView.hidden = true;
+  myCharactersView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   favoritesView.hidden = false;
@@ -1292,6 +1303,7 @@ function showTrending() {
   recentChatsView.hidden = true;
   favoritesView.hidden = true;
   mostLikedView.hidden = true;
+  myCharactersView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   trendingView.hidden = false;
@@ -1307,6 +1319,7 @@ function showMostLiked() {
   recentChatsView.hidden = true;
   favoritesView.hidden = true;
   trendingView.hidden = true;
+  myCharactersView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   mostLikedView.hidden = false;
@@ -1315,9 +1328,40 @@ function showMostLiked() {
   renderMostLikedGallery();
 }
 
+function showMyCharacters() {
+  activeId = null;
+  chatView.hidden = true;
+  galleryView.hidden = true;
+  recentChatsView.hidden = true;
+  favoritesView.hidden = true;
+  trendingView.hidden = true;
+  mostLikedView.hidden = true;
+  groupChatView.hidden = true;
+  groupChatsView.hidden = true;
+  myCharactersView.hidden = false;
+  setTab("myCharacters");
+  document.querySelector(".app").classList.remove("chat-active");
+  renderMyCharactersGallery();
+}
+
+function renderMyCharactersGallery() {
+  if (!currentUser) {
+    myCharactersGalleryEl.innerHTML = `<p class="card-desc">Sign in to see your characters.</p>`;
+    return;
+  }
+  const mine = characters.filter(c => c.created_by === currentUser.id);
+  myCharactersGalleryEl.innerHTML = "";
+  if (mine.length === 0) {
+    myCharactersGalleryEl.innerHTML = `<p class="card-desc">You haven't created any characters yet.</p>`;
+    return;
+  }
+  mine.forEach(c => myCharactersGalleryEl.appendChild(buildCard(c)));
+}
+
 homeNavBtn.addEventListener("click", showGallery);
 recentChatsBtn.addEventListener("click", showRecentChats);
 favoritesBtn.addEventListener("click", showFavorites);
+myCharactersBtn.addEventListener("click", showMyCharacters);
 trendingBtn.addEventListener("click", showTrending);
 mostLikedBtn.addEventListener("click", showMostLiked);
 
@@ -1342,6 +1386,7 @@ async function openChat(id) {
   savedGalleryScroll = document.querySelector(".main-content").scrollTop;
   galleryView.hidden = true;
   recentChatsView.hidden = true;
+  myCharactersView.hidden = true;
   chatView.hidden = false;
   document.querySelector(".app").classList.add("chat-active");
   currentMessages = await loadMessages(id);
@@ -2244,6 +2289,7 @@ function showGroupChats() {
   favoritesView.hidden = true;
   trendingView.hidden = true;
   mostLikedView.hidden = true;
+  myCharactersView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = false;
   setTab("groupChats");
@@ -2450,7 +2496,7 @@ async function init() {
   characters = shuffleArray(await loadCharacters());
   const savedTab = localStorage.getItem("sceneai_activeTab");
   const savedChat = localStorage.getItem("sceneai_activeChat");
-  const tabMap = { home: showGallery, chats: showRecentChats, favorites: showFavorites, trending: showTrending, mostLiked: showMostLiked, groupChats: showGroupChats };
+  const tabMap = { home: showGallery, chats: showRecentChats, favorites: showFavorites, myCharacters: showMyCharacters, trending: showTrending, mostLiked: showMostLiked, groupChats: showGroupChats };
   if (savedChat && characters.find(x => x.id === savedChat)) {
     openChat(savedChat);
   } else if (savedTab && tabMap[savedTab]) {
