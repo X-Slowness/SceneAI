@@ -117,8 +117,8 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 14px;
+  gap: 6px;
+  padding: 5px 10px 5px 12px;
   background: rgba(245,158,11,0.12);
   border: 1px solid rgba(245,158,11,0.3);
   border-radius: 20px;
@@ -145,7 +145,7 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
   transition: all 0.2s ease;
   line-height: 1;
   padding: 0;
-  margin-left: 2px;
+  margin-left: 0;
   flex-shrink: 0;
 }
 .buy-coins-add:hover {
