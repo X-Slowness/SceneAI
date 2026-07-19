@@ -133,7 +133,10 @@ function updateCreateBtnBadge() {
       badge.className = "create-badge";
       newBtn.appendChild(badge);
     }
-    if (coinInfo.is_subscriber) {
+    if (coinInfo.is_admin) {
+      badge.textContent = "ADMIN";
+      badge.style.background = "#6b3fa0";
+    } else if (coinInfo.is_subscriber) {
       badge.textContent = "PRO";
       badge.style.background = "var(--accent-bright)";
     } else if (coinInfo.free_remaining > 0) {
