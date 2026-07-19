@@ -710,14 +710,20 @@ app.put("/api/characters/:id", (req, res) => {
   res.json({ ...row, tags: JSON.parse(row.tags || "[]"), history: [] });
 });
 
-// Delete character (admin only)
-app.delete("/api/characters/:id", requireAdmin, (req, res) => {
+// Delete character (admin or creator)
+app.delete("/api/characters/:id", (req, res) => {
+  const userId = req.headers["x-user-id"];
   const existing = db.prepare("SELECT * FROM characters WHERE id = ?").get(req.params.id);
   if (!existing) return res.status(404).json({ error: "Not found." });
+  if (userId !== ADMIN_USER_ID && existing.created_by !== userId) {
+    return res.status(403).json({ error: "You can only delete your own characters." });
+  }
   db.prepare("DELETE FROM messages WHERE character_id = ?").run(req.params.id);
+  db.prepare("DELETE FROM favorites WHERE character_id = ?").run(req.params.id);
   db.prepare("DELETE FROM likes WHERE character_id = ?").run(req.params.id);
   db.prepare("DELETE FROM memories WHERE character_id = ?").run(req.params.id);
   db.prepare("DELETE FROM characters WHERE id = ?").run(req.params.id);
+  saveBackup();
   res.json({ ok: true });
 });
 

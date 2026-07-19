@@ -1236,6 +1236,8 @@ dialog input[type="color"] {
   font-weight: 600;
 }
 .modal-actions .primary:hover { box-shadow: 0 0 25px rgba(201,149,44,0.4); }
+.modal-actions .danger-btn { background: transparent; color: #e74c3c; font-weight: 600; }
+.modal-actions .danger-btn:hover { background: #e74c3c; color: #fff; }
 
 .tags-section { margin: 6px 0 10px; }
 .tags-label {

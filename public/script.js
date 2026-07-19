@@ -510,6 +510,7 @@ const personaInput = document.getElementById("charPersona");
 const colorInput = document.getElementById("charColor");
 const tagsContainer = document.getElementById("tagsContainer");
 const firstMsgInput = document.getElementById("charFirstMsg");
+const deleteCharacterBtn = document.getElementById("deleteCharacter");
 
 let pendingPhoto = null;
 let pendingPhotoPos = 50;
@@ -613,6 +614,7 @@ async function openCreateModal() {
   updatePhotoButton();
   selectedTags = [];
   renderTagChips(tagsContainer, selectedTags);
+  deleteCharacterBtn.style.display = "none";
   modal.showModal();
 }
 
@@ -630,11 +632,29 @@ function openEditModal(c) {
   updatePhotoButton();
   selectedTags = [...(c.tags || [])];
   renderTagChips(tagsContainer, selectedTags);
+  const canDelete = currentUser && (isAdmin || c.created_by === currentUser.id);
+  deleteCharacterBtn.style.display = canDelete ? "" : "none";
   modal.showModal();
 }
 
 document.getElementById("newCharacterBtn").addEventListener("click", openCreateModal);
 document.getElementById("cancelCharacter").addEventListener("click", () => modal.close());
+deleteCharacterBtn.addEventListener("click", async () => {
+  if (!editingId) return;
+  const c = characters.find(x => x.id === editingId);
+  const charName = c ? c.name : "this character";
+  if (!(await showConfirm(`Delete "${charName}"?\n\nThis will permanently remove the character, all messages, likes, favorites, and memories. This cannot be undone.`))) return;
+  try {
+    await fetch(`/api/characters/${editingId}`, { method: "DELETE", headers: { "x-user-id": currentUser?.id || "" } });
+    editingId = null;
+    modal.close();
+    await refreshCharacters();
+    showGallery();
+  } catch(e) {
+    console.error("Delete character failed:", e);
+    showAlert("Error", "Failed to delete character.");
+  }
+});
 
 // ── AI Character Generator ────────────────────────────────
 const aiGenModal = document.getElementById("aiGenModal");
