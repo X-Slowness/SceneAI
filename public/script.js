@@ -124,12 +124,14 @@ async function fetchCoinInfo() {
   try {
     const res = await fetch(`/api/coins/${currentUser.id}?_t=${Date.now()}`);
     if (res.ok) coinInfo = await res.json();
-  } catch(e) {}
+    console.log("COIN INFO:", coinInfo);
+  } catch(e) { console.error("COIN FETCH ERROR:", e); }
   const coinBadge = document.getElementById("coinBadge");
   const coinCount = document.getElementById("coinCount");
   if (coinBadge && coinCount) {
     coinBadge.style.display = "flex";
     coinCount.textContent = coinInfo.coins || 0;
+    console.log("COIN DISPLAY:", coinInfo.coins);
   }
 }
 function updateCreateBtnBadge() {
