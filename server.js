@@ -497,7 +497,7 @@ const COIN_COST_PER_CHAR = 200;
 // Get coins + free uses for a user
 app.get("/api/coins/:userId", (req, res) => {
   if (req.params.userId === ADMIN_USER_ID) {
-    return res.json({ coins: 0, free_characters_used: 0, free_remaining: Infinity, tier: "admin", is_admin: true, is_subscriber: true, coin_cost: COIN_COST_PER_CHAR });
+    return res.json({ coins: 0, free_characters_used: 0, free_remaining: 999999, tier: "admin", is_admin: true, is_subscriber: true, coin_cost: COIN_COST_PER_CHAR });
   }
   const row = db.prepare("SELECT coins, free_characters_used, tier FROM subscriptions WHERE user_id = ?").get(req.params.userId);
   if (!row) {
