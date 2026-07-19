@@ -1063,6 +1063,7 @@ function buildCard(c, { showSnippet } = {}) {
     </div>
     <div class="card-body">
       <p class="card-name">${escapeHtml(c.name)}${count > 0 ? ` <span class="card-chat-count" title="${count} messages"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${formatCount(count)}</span>` : ""}</p>
+      ${c.creator_name ? `<p class="card-creator">@${escapeHtml(c.creator_name)}</p>` : ""}
       ${c.tagline ? `<p class="card-tagline">${escapeHtml(c.tagline)}</p>` : ""}
       ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ""}
       ${snippetHtml}

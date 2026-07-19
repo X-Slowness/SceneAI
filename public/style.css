@@ -790,6 +790,12 @@ body.light .theme-toggle-thumb {
   font-weight: 500;
   text-shadow: 0 0 15px rgba(201,149,44,0.4);
 }
+.card-creator {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin: 4px 0 0;
+  opacity: 0.7;
+}
 
 .card-desc {
   font-size: 12px;

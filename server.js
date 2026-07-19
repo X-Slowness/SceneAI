@@ -275,6 +275,7 @@ try { db.exec("ALTER TABLE subscriptions ADD COLUMN coins INTEGER DEFAULT 0"); }
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN free_characters_used INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN streak_day INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN last_claim_date TEXT DEFAULT ''"); } catch(e) {}
+try { db.exec("ALTER TABLE characters ADD COLUMN created_by TEXT DEFAULT ''"); } catch(e) {}
 
 // Seed like_count from likes table for any characters that have 0 but should have more
 db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id) WHERE like_count = 0 AND id IN (SELECT character_id FROM likes)`);
@@ -483,15 +484,27 @@ app.get("/api/characters", (req, res) => {
   const rows = db.prepare("SELECT * FROM characters").all();
   const userLikeStmt = userId ? db.prepare("SELECT 1 FROM likes WHERE character_id = ? AND user_id = ?") : null;
   const userFavStmt = userId ? db.prepare("SELECT 1 FROM favorites WHERE character_id = ? AND user_id = ?") : null;
-  const characters = rows.map(r => ({
-    ...r,
-    tags: JSON.parse(r.tags || "[]"),
-    history: [],
-    message_count: r.message_count || 0,
-    like_count: r.like_count || 0,
-    liked: userLikeStmt ? !!userLikeStmt.get(r.id, userId) : false,
-    favorited: userFavStmt ? !!userFavStmt.get(r.id, userId) : false
-  }));
+  const creatorCache = {};
+  const characters = rows.map(r => {
+    let creatorName = "";
+    if (r.created_by) {
+      if (!(r.created_by in creatorCache)) {
+        const profile = db.prepare("SELECT username FROM user_profiles WHERE user_id = ?").get(r.created_by);
+        creatorCache[r.created_by] = profile ? profile.username : "";
+      }
+      creatorName = creatorCache[r.created_by];
+    }
+    return {
+      ...r,
+      tags: JSON.parse(r.tags || "[]"),
+      history: [],
+      message_count: r.message_count || 0,
+      like_count: r.like_count || 0,
+      liked: userLikeStmt ? !!userLikeStmt.get(r.id, userId) : false,
+      favorited: userFavStmt ? !!userFavStmt.get(r.id, userId) : false,
+      creator_name: creatorName
+    };
+  });
   res.json(characters);
 });
 
@@ -643,8 +656,8 @@ app.post("/api/characters", (req, res) => {
   if (!name || !persona) return res.status(400).json({ error: "Name and persona required." });
   const id = crypto.randomUUID();
   db.prepare(
-    "INSERT INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  ).run(id, name, tagline || "", color || "#e2b04a", photo || null, photoPos ?? 50, photoZoom ?? 1.0, persona, firstMessage || "", JSON.stringify(tags || []));
+    "INSERT INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).run(id, name, tagline || "", color || "#e2b04a", photo || null, photoPos ?? 50, photoZoom ?? 1.0, persona, firstMessage || "", JSON.stringify(tags || []), userId);
 
   // Deduct free use or coins for non-admin, non-subscriber users
   if (userId !== ADMIN_USER_ID) {
