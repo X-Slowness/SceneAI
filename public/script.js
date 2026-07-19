@@ -1056,7 +1056,7 @@ function formatCount(n) {
   return n;
 }
 
-function buildCard(c, { showSnippet } = {}) {
+function buildCard(c, { showSnippet, showEdit } = {}) {
   const card = document.createElement("button");
   card.className = "card";
   const tagsHtml = (c.tags && c.tags.length) ? c.tags.map(t => `<span class="card-tag">${escapeHtml(t)}</span>`).join("") : "";
@@ -1067,7 +1067,7 @@ function buildCard(c, { showSnippet } = {}) {
   const likeCount = c.like_count || 0;
   const isLiked = c.liked ? " liked" : "";
   const isFav = c.favorited ? " favorited" : "";
-  const canEdit = currentUser && (isAdmin || c.created_by === currentUser.id);
+  const canEdit = showEdit && currentUser && (isAdmin || c.created_by === currentUser.id);
   card.innerHTML = `
     <button class="card-fav${isFav}" title="Toggle favorite" aria-label="Toggle favorite for ${escapeHtml(c.name)}">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="${c.favorited ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -1377,7 +1377,7 @@ function renderMyCharactersGallery() {
     myCharactersGalleryEl.innerHTML = `<p class="card-desc">You haven't created any characters yet.</p>`;
     return;
   }
-  mine.forEach(c => myCharactersGalleryEl.appendChild(buildCard(c)));
+  mine.forEach(c => myCharactersGalleryEl.appendChild(buildCard(c, { showEdit: true })));
 }
 
 homeNavBtn.addEventListener("click", showGallery);
