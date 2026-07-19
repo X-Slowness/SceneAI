@@ -130,17 +130,13 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
 }
 
 .buy-coins-add {
-  position: absolute;
-  top: 20px;
-  left: 156px;
-  z-index: 10;
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  border: 1px solid rgba(245,158,11,0.4);
-  background: rgba(245,158,11,0.15);
+  border: 1px solid rgba(245,158,11,0.5);
+  background: rgba(245,158,11,0.2);
   color: #f59e0b;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -148,9 +144,12 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
   justify-content: center;
   transition: all 0.2s ease;
   line-height: 1;
+  padding: 0;
+  margin-left: 2px;
+  flex-shrink: 0;
 }
 .buy-coins-add:hover {
-  background: rgba(245,158,11,0.3);
+  background: rgba(245,158,11,0.4);
   box-shadow: 0 0 12px rgba(245,158,11,0.3);
   transform: scale(1.1);
 }
