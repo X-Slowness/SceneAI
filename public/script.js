@@ -121,10 +121,12 @@ async function fetchCoinInfo() {
     document.getElementById("coinBadge").style.display = "none";
     return;
   }
+  console.log("FETCHING COINS FOR USER:", currentUser.id);
   try {
     const res = await fetch(`/api/coins/${currentUser.id}?_t=${Date.now()}`);
-    if (res.ok) coinInfo = await res.json();
-    console.log("COIN INFO:", coinInfo);
+    const raw = await res.json();
+    console.log("RAW COIN RESPONSE:", JSON.stringify(raw));
+    if (res.ok) coinInfo = raw;
   } catch(e) { console.error("COIN FETCH ERROR:", e); }
   const coinBadge = document.getElementById("coinBadge");
   const coinCount = document.getElementById("coinCount");
@@ -234,6 +236,33 @@ claimDailyBtn.addEventListener("click", async () => {
 
 closeDailyBtn.addEventListener("click", () => { dailyRewardModal.close(); fetchCoinInfo(); });
 dailyRewardModal.addEventListener("click", (e) => { if (e.target === dailyRewardModal) { dailyRewardModal.close(); fetchCoinInfo(); } });
+
+document.getElementById("dailyRewardBtn").addEventListener("click", async () => {
+  if (!currentUser) { document.getElementById("signInRequiredModal").showModal(); return; }
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  try {
+    const res = await fetch(`/api/daily-reward/${currentUser.id}?tz=${encodeURIComponent(tz)}`);
+    const data = await res.json();
+    if (data.claimable) {
+      renderStreakDays(data.streak_day, false);
+      dailyRewardMsg.textContent = `Log in tomorrow for Day ${data.streak_day + 1 > 7 ? 1 : data.streak_day + 1} — ${REWARDS[data.streak_day + 1 > 7 ? 1 : data.streak_day + 1]} coins!`;
+      dailyRewardSubtitle.textContent = `Day ${data.streak_day} of 7`;
+      claimDailyBtn.textContent = `Claim +${data.reward}`;
+      claimDailyBtn.style.display = "";
+    } else if (data.admin) {
+      renderStreakDays(7, true);
+      dailyRewardMsg.textContent = "Admin — unlimited access!";
+      dailyRewardSubtitle.textContent = "All rewards unlocked";
+      claimDailyBtn.style.display = "none";
+    } else {
+      renderStreakDays(data.streak_day, true);
+      dailyRewardMsg.textContent = "Already claimed today! Come back tomorrow.";
+      dailyRewardSubtitle.textContent = `Day ${data.streak_day} of 7`;
+      claimDailyBtn.style.display = "none";
+    }
+    dailyRewardModal.showModal();
+  } catch(e) {}
+});
 
 // ── Buy Coins ─────────────────────────────────────────────
 const buyCoinsModal = document.getElementById("buyCoinsModal");
