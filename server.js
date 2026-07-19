@@ -343,8 +343,8 @@ if (needsRestore) {
             db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
           }
           for (const s of (data.subscriptions || [])) {
-            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-              .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.created_at);
+            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+              .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.created_at);
           }
           for (const m of (data.memories || [])) {
             db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)").run(m.id, m.character_id, m.user_id, m.content, m.created_at);
