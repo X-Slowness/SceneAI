@@ -201,6 +201,18 @@ h1, h2, .wordmark, .wordmark-sm { font-family: 'Playfair Display', Georgia, seri
 .create-nav-btn:hover {
   box-shadow: 0 0 40px rgba(201,149,44,0.5);
 }
+.create-badge {
+  display: inline-block;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: var(--accent-bright);
+  color: #fff;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-left: 4px;
+  vertical-align: middle;
+}
 .ai-gen-nav-btn {
   background: linear-gradient(135deg, #6b3fa0, #3a7bd5) !important;
   color: #fff !important;

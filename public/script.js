@@ -98,7 +98,7 @@ async function checkSubscription() {
 
 function applyAdminUI() {
   const newBtn = document.getElementById("newCharacterBtn");
-  if (newBtn) newBtn.style.display = (isAdmin || isSubscriber) ? "" : "none";
+  if (newBtn) newBtn.style.display = currentUser ? "" : "none";
   const aiBtn = document.getElementById("aiGenBtn");
   if (aiBtn) aiBtn.style.display = isAdmin ? "" : "none";
   document.querySelectorAll(".card-edit").forEach(el => {
@@ -112,6 +112,38 @@ function applyAdminUI() {
   if (!currentUser && !galleryView.hidden) {
     showGallery();
   }
+  updateCreateBtnBadge();
+}
+
+let coinInfo = { coins: 0, free_remaining: 10, is_subscriber: false };
+async function fetchCoinInfo() {
+  if (!currentUser) return;
+  try {
+    const res = await fetch(`/api/coins/${currentUser.id}`);
+    if (res.ok) coinInfo = await res.json();
+  } catch(e) {}
+}
+function updateCreateBtnBadge() {
+  fetchCoinInfo().then(() => {
+    const newBtn = document.getElementById("newCharacterBtn");
+    if (!newBtn) return;
+    let badge = newBtn.querySelector(".create-badge");
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "create-badge";
+      newBtn.appendChild(badge);
+    }
+    if (coinInfo.is_subscriber) {
+      badge.textContent = "PRO";
+      badge.style.background = "var(--accent-bright)";
+    } else if (coinInfo.free_remaining > 0) {
+      badge.textContent = coinInfo.free_remaining + " free left";
+      badge.style.background = "var(--accent-bright)";
+    } else {
+      badge.textContent = coinInfo.coins + " coins";
+      badge.style.background = coinInfo.coins >= 200 ? "#22c55e" : "#ef4444";
+    }
+  });
 }
 
 async function createCharacter(data) {
@@ -120,7 +152,10 @@ async function createCharacter(data) {
     headers: authHeaders(),
     body: JSON.stringify(data)
   });
-  if (!res.ok) throw new Error("Failed to create character");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to create character");
+  }
   return await res.json();
 }
 
@@ -414,9 +449,9 @@ function renderTagChips(container, selected) {
   });
 }
 
-function openCreateModal() {
-  if (!isSubscriber && !isAdmin) {
-    membershipModal.showModal();
+async function openCreateModal() {
+  if (!currentUser) {
+    document.getElementById("signInRequiredModal").showModal();
     return;
   }
   editingId = null;
@@ -703,9 +738,13 @@ characterForm.addEventListener("submit", async () => {
     editingId = null;
     pendingPhoto = null;
     await refreshCharacters();
+    updateCreateBtnBadge();
   } catch(e) {
     console.error("Save character failed:", e);
-    if (e.message === "Permission denied") {
+    const msg = e.message || "";
+    if (msg.includes("200 coins") || msg.includes("No free uses")) {
+      showAlert("No Coins", "You've used all 10 free character creations. You need 200 coins to create more characters.");
+    } else if (e.message === "Permission denied") {
       showAlert("Error", "You don't have permission to edit the character.");
     } else {
       showAlert("Error", "Failed to save character.");

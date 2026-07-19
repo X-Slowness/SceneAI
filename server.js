@@ -259,6 +259,10 @@ try { db.exec("ALTER TABLE characters ADD COLUMN message_count INTEGER DEFAULT 0
 try { db.exec("ALTER TABLE subscriptions RENAME COLUMN stripe_customer_id TO lemon_order_id"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions RENAME COLUMN stripe_subscription_id TO lemon_subscription_id"); } catch(e) {}
 
+// Add coins system columns
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN coins INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN free_characters_used INTEGER DEFAULT 0"); } catch(e) {}
+
 // Seed like_count from likes table for any characters that have 0 but should have more
 db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id) WHERE like_count = 0 AND id IN (SELECT character_id FROM likes)`);
 // Seed message_count from messages table
@@ -486,14 +490,79 @@ app.get("/api/characters/:id", (req, res) => {
   res.json({ ...row, tags: JSON.parse(row.tags || "[]"), history: [], message_count: row.message_count || 0 });
 });
 
-// Create character (admin only)
-app.post("/api/characters", requireAdmin, (req, res) => {
+// ── Coins System ──────────────────────────────────────────
+const FREE_CHAR_LIMIT = 10;
+const COIN_COST_PER_CHAR = 200;
+
+// Get coins + free uses for a user
+app.get("/api/coins/:userId", (req, res) => {
+  const row = db.prepare("SELECT coins, free_characters_used, tier FROM subscriptions WHERE user_id = ?").get(req.params.userId);
+  if (!row) {
+    return res.json({ coins: 0, free_characters_used: 0, free_remaining: FREE_CHAR_LIMIT, tier: "free", is_subscriber: false });
+  }
+  const isSub = row.tier === "subscriber";
+  res.json({
+    coins: row.coins || 0,
+    free_characters_used: row.free_characters_used || 0,
+    free_remaining: isSub ? Infinity : Math.max(0, FREE_CHAR_LIMIT - (row.free_characters_used || 0)),
+    tier: row.tier,
+    is_subscriber: isSub,
+    coin_cost: COIN_COST_PER_CHAR
+  });
+});
+
+// Add coins (for purchases)
+app.post("/api/coins/:userId/add", (req, res) => {
+  const { amount } = req.body;
+  if (!amount || amount <= 0) return res.status(400).json({ error: "Invalid amount." });
+  db.prepare(`INSERT INTO subscriptions (user_id, tier, coins, created_at) VALUES (?, 'free', ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET coins = coins + ?`)
+    .run(req.params.userId, amount, Date.now(), amount);
+  saveBackup();
+  const row = db.prepare("SELECT coins FROM subscriptions WHERE user_id = ?").get(req.params.userId);
+  res.json({ ok: true, coins: row.coins });
+});
+
+// Create character (admin = free, subscriber = free, free user = 10 free then 200 coins)
+app.post("/api/characters", (req, res) => {
+  const userId = req.headers["x-user-id"];
+  if (!userId) return res.status(401).json({ error: "Sign in required." });
+  if (userId !== ADMIN_USER_ID) {
+    const sub = db.prepare("SELECT tier, coins, free_characters_used FROM subscriptions WHERE user_id = ?").get(userId);
+    const isSub = sub && sub.tier === "subscriber";
+    if (!isSub) {
+      const used = (sub && sub.free_characters_used) || 0;
+      const coins = (sub && sub.coins) || 0;
+      if (used >= FREE_CHAR_LIMIT && coins < COIN_COST_PER_CHAR) {
+        return res.status(403).json({ error: "No free uses left. You need 200 coins to create a character.", free_remaining: 0, coins, coin_cost: COIN_COST_PER_CHAR });
+      }
+    }
+  }
   const { name, tagline, color, photo, photoPos, photoZoom, persona, firstMessage, tags } = req.body;
   if (!name || !persona) return res.status(400).json({ error: "Name and persona required." });
   const id = crypto.randomUUID();
   db.prepare(
     "INSERT INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   ).run(id, name, tagline || "", color || "#e2b04a", photo || null, photoPos ?? 50, photoZoom ?? 1.0, persona, firstMessage || "", JSON.stringify(tags || []));
+
+  // Deduct free use or coins for non-admin, non-subscriber users
+  if (userId !== ADMIN_USER_ID) {
+    const sub = db.prepare("SELECT tier, coins, free_characters_used FROM subscriptions WHERE user_id = ?").get(userId);
+    const isSub = sub && sub.tier === "subscriber";
+    if (!isSub) {
+      const used = (sub && sub.free_characters_used) || 0;
+      const coins = (sub && sub.coins) || 0;
+      if (used < FREE_CHAR_LIMIT) {
+        db.prepare(`INSERT INTO subscriptions (user_id, tier, free_characters_used, created_at) VALUES (?, 'free', 1, ?)
+          ON CONFLICT(user_id) DO UPDATE SET free_characters_used = free_characters_used + 1`).run(userId, Date.now());
+      } else {
+        db.prepare(`INSERT INTO subscriptions (user_id, tier, coins, created_at) VALUES (?, 'free', ?, ?)
+          ON CONFLICT(user_id) DO UPDATE SET coins = coins - ${COIN_COST_PER_CHAR}`).run(userId, 0 - COIN_COST_PER_CHAR, Date.now());
+      }
+      saveBackup();
+    }
+  }
+
   const row = db.prepare("SELECT * FROM characters WHERE id = ?").get(id);
   saveBackup();
   res.json({ ...row, tags: JSON.parse(row.tags || "[]"), history: [] });
