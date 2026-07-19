@@ -1228,12 +1228,15 @@ app.delete("/api/users/:userId/messages", (req, res) => {
   db.prepare("DELETE FROM favorites WHERE user_id = ?").run(userId);
   db.prepare("DELETE FROM likes WHERE user_id = ?").run(userId);
   db.prepare("DELETE FROM memories WHERE user_id = ?").run(userId);
+  db.prepare("DELETE FROM subscriptions WHERE user_id = ?").run(userId);
+  db.prepare("DELETE FROM user_profiles WHERE user_id = ?").run(userId);
   const userGroups = db.prepare("SELECT id FROM group_chats WHERE user_id = ?").all(userId);
   for (const g of userGroups) {
     db.prepare("DELETE FROM group_chat_messages WHERE group_id = ?").run(g.id);
     db.prepare("DELETE FROM group_chat_members WHERE group_id = ?").run(g.id);
   }
   db.prepare("DELETE FROM group_chats WHERE user_id = ?").run(userId);
+  saveBackup();
   res.json({ ok: true });
 });
 
