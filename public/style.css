@@ -2336,7 +2336,8 @@ body.light .memory-input-row input {
 }
 .quest-card.quest-complete { border-color: var(--accent); }
 .quest-info { flex: 1; min-width: 0; }
-.quest-name { font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 2px; }
+.quest-name { font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 2px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.quest-reward { font-size: 12px; font-weight: 700; color: var(--accent); background: rgba(201,149,44,0.12); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
 .quest-desc { font-size: 13px; color: var(--text-dim); margin: 0; }
 .quest-right {
   display: flex;

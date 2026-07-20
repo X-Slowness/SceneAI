@@ -1467,7 +1467,7 @@ function questCardHtml(q) {
   const claimDisabled = q.claimed || !q.complete ? "disabled" : "";
   return `<div class="quest-card${q.complete && !q.claimed ? " quest-complete" : ""}">
     <div class="quest-info">
-      <p class="quest-name">${escapeHtml(q.name)}</p>
+      <p class="quest-name">${escapeHtml(q.name)} <span class="quest-reward">+${q.reward} coins</span></p>
       <p class="quest-desc">${escapeHtml(q.desc)}</p>
     </div>
     <div class="quest-right">
