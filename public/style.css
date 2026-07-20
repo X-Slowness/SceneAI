@@ -2401,7 +2401,7 @@ body.light .memory-input-row input {
 }
 
 /* ── Profile Modal ───────────────────────────────────── */
-#profileModal { width: 420px; max-width: 92vw; border: none; background: none; padding: 0; }
+#publicProfileModal { width: 420px; max-width: 92vw; border: none; background: none; padding: 0; }
 .profile-modal-content {
   background: var(--card);
   border: 1px solid var(--border);

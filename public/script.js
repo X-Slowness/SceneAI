@@ -2300,43 +2300,43 @@ document.getElementById("closeAlertModal").addEventListener("click", () => {
 });
 
 // ── Public Profile Modal ──────────────────────────────────
-const profileModal = document.getElementById("profileModal");
+const publicProfileModal = document.getElementById("publicProfileModal");
 
-document.getElementById("closeProfileModal").addEventListener("click", () => profileModal.close());
-profileModal.addEventListener("click", (e) => { if (e.target === profileModal) profileModal.close(); });
+document.getElementById("closePublicProfileModal").addEventListener("click", () => publicProfileModal.close());
+publicProfileModal.addEventListener("click", (e) => { if (e.target === publicProfileModal) publicProfileModal.close(); });
 
 async function openProfile(userId) {
   if (!userId) return;
-  profileModal.showModal();
-  document.getElementById("profileUsername").textContent = "Loading...";
-  document.getElementById("profileBadge").textContent = "";
-  document.getElementById("profileBadge").className = "profile-badge";
-  document.getElementById("profilePicture").src = "";
-  document.getElementById("profileJoinDate").textContent = "";
-  document.getElementById("profileCharsCreated").textContent = "0";
-  document.getElementById("profileMsgsSent").textContent = "0";
-  document.getElementById("profileLikesReceived").textContent = "0";
-  document.getElementById("profileCharsList").innerHTML = "";
-  document.getElementById("profileCharsSection").style.display = "none";
+  publicProfileModal.showModal();
+  document.getElementById("publicProfileUsername").textContent = "Loading...";
+  document.getElementById("publicProfileBadge").textContent = "";
+  document.getElementById("publicProfileBadge").className = "profile-badge";
+  document.getElementById("publicProfilePicture").src = "";
+  document.getElementById("publicProfileJoinDate").textContent = "";
+  document.getElementById("publicProfileCharsCreated").textContent = "0";
+  document.getElementById("publicProfileMsgsSent").textContent = "0";
+  document.getElementById("publicProfileLikesReceived").textContent = "0";
+  document.getElementById("publicProfileCharsList").innerHTML = "";
+  document.getElementById("publicProfileCharsSection").style.display = "none";
   try {
     const res = await fetch(`/api/profile/${userId}/public`);
-    if (!res.ok) { document.getElementById("profileUsername").textContent = "Unknown user"; return; }
+    if (!res.ok) { document.getElementById("publicProfileUsername").textContent = "Unknown user"; return; }
     const p = await res.json();
-    document.getElementById("profilePicture").src = p.picture || "";
-    document.getElementById("profilePicture").style.display = p.picture ? "" : "none";
-    document.getElementById("profileUsername").textContent = p.username || "Anonymous";
-    const badge = document.getElementById("profileBadge");
+    document.getElementById("publicProfilePicture").src = p.picture || "";
+    document.getElementById("publicProfilePicture").style.display = p.picture ? "" : "none";
+    document.getElementById("publicProfileUsername").textContent = p.username || "Anonymous";
+    const badge = document.getElementById("publicProfileBadge");
     badge.textContent = p.badge;
     badge.className = "profile-badge badge-" + p.badge.toLowerCase();
     if (p.created_at) {
-      document.getElementById("profileJoinDate").textContent = "Joined " + new Date(p.created_at).toLocaleDateString();
+      document.getElementById("publicProfileJoinDate").textContent = "Joined " + new Date(p.created_at).toLocaleDateString();
     }
-    document.getElementById("profileCharsCreated").textContent = p.characters_created || 0;
-    document.getElementById("profileMsgsSent").textContent = p.messages_sent || 0;
-    document.getElementById("profileLikesReceived").textContent = p.total_likes_received || 0;
+    document.getElementById("publicProfileCharsCreated").textContent = p.characters_created || 0;
+    document.getElementById("publicProfileMsgsSent").textContent = p.messages_sent || 0;
+    document.getElementById("publicProfileLikesReceived").textContent = p.total_likes_received || 0;
     if (p.characters && p.characters.length > 0) {
-      document.getElementById("profileCharsSection").style.display = "";
-      const list = document.getElementById("profileCharsList");
+      document.getElementById("publicProfileCharsSection").style.display = "";
+      const list = document.getElementById("publicProfileCharsList");
       list.innerHTML = "";
       p.characters.forEach(c => {
         const card = document.createElement("div");
@@ -2353,12 +2353,12 @@ async function openProfile(userId) {
             <p class="profile-char-stats">${formatCount(c.like_count)} likes · ${formatCount(c.message_count)} msgs</p>
           </div>
         `;
-        card.addEventListener("click", () => { profileModal.close(); openChat(c.id); });
+        card.addEventListener("click", () => { publicProfileModal.close(); openChat(c.id); });
         list.appendChild(card);
       });
     }
   } catch(e) {
-    document.getElementById("profileUsername").textContent = "Failed to load profile";
+    document.getElementById("publicProfileUsername").textContent = "Failed to load profile";
   }
 }
 
