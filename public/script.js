@@ -1278,6 +1278,8 @@ function setTab(tab) {
 }
 
 let savedGalleryScroll = 0;
+let previousViewFn = null;
+let profileReturnUserId = null;
 
 function showGallery() {
   activeId = null;
@@ -1532,7 +1534,7 @@ async function openChat(id) {
   document.querySelector(".main-content").style.background = "";
 }
 
-backBtn.addEventListener("click", showGallery);
+backBtn.addEventListener("click", () => { if (profileReturnUserId) { const uid = profileReturnUserId; profileReturnUserId = null; openProfile(uid); } else { showGallery(); } });
 
 // ── Chat header menu ──────────────────────────────────────
 const chatMenuBtn = document.getElementById("chatMenuBtn");
@@ -2310,10 +2312,18 @@ document.getElementById("closeAlertModal").addEventListener("click", () => {
 // ── Public Profile (full-page view) ───────────────────────
 const publicProfileView = document.getElementById("publicProfileView");
 
-document.getElementById("closePublicProfileModal").addEventListener("click", showGallery);
+document.getElementById("closePublicProfileModal").addEventListener("click", () => { (previousViewFn || showGallery)(); });
 
 async function openProfile(userId) {
   if (!userId) return;
+  if (!galleryView.hidden) previousViewFn = showGallery;
+  else if (!recentChatsView.hidden) previousViewFn = showRecentChats;
+  else if (!favoritesView.hidden) previousViewFn = showFavorites;
+  else if (!trendingView.hidden) previousViewFn = showTrending;
+  else if (!mostLikedView.hidden) previousViewFn = showMostLiked;
+  else if (!myCharactersView.hidden) previousViewFn = showMyCharacters;
+  else if (!questsView.hidden) previousViewFn = showQuests;
+  else if (!groupChatsView.hidden) previousViewFn = showGroupChats;
   chatView.hidden = true;
   recentChatsView.hidden = true;
   favoritesView.hidden = true;
@@ -2371,7 +2381,7 @@ async function openProfile(userId) {
             <p class="profile-char-stats">${formatCount(c.like_count)} likes · ${formatCount(c.message_count)} msgs</p>
           </div>
         `;
-        card.addEventListener("click", () => { openChat(c.id); });
+        card.addEventListener("click", () => { profileReturnUserId = userId; openChat(c.id); });
         list.appendChild(card);
       });
     }
