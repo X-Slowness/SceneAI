@@ -795,7 +795,15 @@ body.light .theme-toggle-thumb {
   color: var(--text-dim);
   margin: 4px 0 0;
   opacity: 0.7;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font-family: inherit;
+  transition: color 0.15s, opacity 0.15s;
 }
+.card-creator:hover { color: var(--accent); opacity: 1; }
 
 .card-desc {
   font-size: 12px;
@@ -2391,3 +2399,87 @@ body.light .memory-input-row input {
   .quest-right { min-width: 0; flex-direction: row; align-items: center; gap: 10px; }
   .quest-progress-bar { flex: 1; }
 }
+
+/* ── Profile Modal ───────────────────────────────────── */
+#profileModal { width: 420px; max-width: 92vw; border: none; background: none; padding: 0; }
+.profile-modal-content {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  position: relative;
+}
+.profile-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+.profile-close-btn:hover { color: var(--text); }
+.profile-header { text-align: center; margin-bottom: 20px; }
+.profile-picture {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  margin-bottom: 10px;
+}
+.profile-username { font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
+.profile-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-admin { background: rgba(239,68,68,0.15); color: #f87171; }
+.badge-pro { background: rgba(201,149,44,0.15); color: var(--accent); }
+.badge-user { background: rgba(255,255,255,0.08); color: var(--text-dim); }
+.profile-join-date { font-size: 12px; color: var(--text-dim); margin: 8px 0 0; }
+.profile-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.profile-stat { text-align: center; }
+.profile-stat-num { display: block; font-size: 18px; font-weight: 700; color: var(--text); }
+.profile-stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; }
+.profile-chars-section { margin-top: 4px; }
+.profile-chars-title { font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 10px; }
+.profile-chars-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+.profile-char-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.profile-char-card:hover { border-color: var(--accent); }
+.profile-char-photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.profile-char-info { flex: 1; min-width: 0; }
+.profile-char-name { font-size: 14px; font-weight: 600; color: var(--text); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-char-tagline { font-size: 12px; color: var(--text-dim); margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-char-stats { font-size: 11px; color: var(--text-dim); margin: 2px 0 0; }

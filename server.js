@@ -623,6 +623,44 @@ app.get("/api/profile/:userId", (req, res) => {
   res.json(row || { user_id: req.params.userId, username: null, picture: null });
 });
 
+// Public profile with stats
+app.get("/api/profile/:userId/public", (req, res) => {
+  const userId = req.params.userId;
+  const profile = db.prepare("SELECT * FROM user_profiles WHERE user_id = ?").get(userId);
+  if (!profile) return res.status(404).json({ error: "Profile not found." });
+  const createdChars = db.prepare("SELECT id, name, tagline, color, photo, photo_pos, photo_zoom, like_count, message_count, tags FROM characters WHERE created_by = ?").all(userId);
+  const totalLikes = createdChars.reduce((sum, c) => sum + (c.like_count || 0), 0);
+  const totalMsgs = createdChars.reduce((sum, c) => sum + (c.message_count || 0), 0);
+  const sub = db.prepare("SELECT tier, total_messages, total_likes_given, coins FROM subscriptions WHERE user_id = ?").get(userId);
+  const isAdmin = userId === ADMIN_USER_ID;
+  let badge = "User";
+  if (isAdmin) badge = "Admin";
+  else if (sub && sub.tier === "subscriber") badge = "Pro";
+  res.json({
+    user_id: userId,
+    username: profile.username,
+    picture: profile.picture,
+    created_at: profile.created_at,
+    badge,
+    characters_created: createdChars.length,
+    total_likes_received: totalLikes,
+    messages_sent: (sub && sub.total_messages) || 0,
+    coins_earned: (sub && sub.coins) || 0,
+    characters: createdChars.map(c => ({
+      id: c.id,
+      name: c.name,
+      tagline: c.tagline,
+      color: c.color,
+      photo: c.photo,
+      photo_pos: c.photo_pos,
+      photo_zoom: c.photo_zoom,
+      like_count: c.like_count || 0,
+      message_count: c.message_count || 0,
+      tags: JSON.parse(c.tags || "[]")
+    }))
+  });
+});
+
 app.put("/api/profile/:userId", (req, res) => {
   const { username, picture } = req.body;
   const now = Date.now();

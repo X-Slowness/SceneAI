@@ -1088,7 +1088,7 @@ function buildCard(c, { showSnippet, showEdit } = {}) {
     </div>
     <div class="card-body">
       <p class="card-name">${escapeHtml(c.name)}${count > 0 ? ` <span class="card-chat-count" title="${count} messages"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${formatCount(count)}</span>` : ""}</p>
-      ${c.creator_name ? `<p class="card-creator">@${escapeHtml(c.creator_name)}</p>` : ""}
+      ${c.creator_name ? `<span class="card-creator">@${escapeHtml(c.creator_name)}</span>` : ""}
       ${c.tagline ? `<p class="card-tagline">${escapeHtml(c.tagline)}</p>` : ""}
       ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ""}
       ${snippetHtml}
@@ -1106,6 +1106,13 @@ function buildCard(c, { showSnippet, showEdit } = {}) {
     e.stopPropagation();
     openCharInfo(c);
   });
+  const creatorBtn = card.querySelector(".card-creator");
+  if (creatorBtn) {
+    creatorBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openProfile(c.created_by);
+    });
+  }
   card.querySelector(".card-fav").addEventListener("click", async (e) => {
     e.stopPropagation();
     if (!requireAuth()) return;
@@ -2291,6 +2298,69 @@ document.getElementById("closeSignInRequired").addEventListener("click", () => {
 document.getElementById("closeAlertModal").addEventListener("click", () => {
   document.getElementById("alertModal").close();
 });
+
+// ── Public Profile Modal ──────────────────────────────────
+const profileModal = document.getElementById("profileModal");
+
+document.getElementById("closeProfileModal").addEventListener("click", () => profileModal.close());
+profileModal.addEventListener("click", (e) => { if (e.target === profileModal) profileModal.close(); });
+
+async function openProfile(userId) {
+  if (!userId) return;
+  profileModal.showModal();
+  document.getElementById("profileUsername").textContent = "Loading...";
+  document.getElementById("profileBadge").textContent = "";
+  document.getElementById("profileBadge").className = "profile-badge";
+  document.getElementById("profilePicture").src = "";
+  document.getElementById("profileJoinDate").textContent = "";
+  document.getElementById("profileCharsCreated").textContent = "0";
+  document.getElementById("profileMsgsSent").textContent = "0";
+  document.getElementById("profileLikesReceived").textContent = "0";
+  document.getElementById("profileCharsList").innerHTML = "";
+  document.getElementById("profileCharsSection").style.display = "none";
+  try {
+    const res = await fetch(`/api/profile/${userId}/public`);
+    if (!res.ok) { document.getElementById("profileUsername").textContent = "Unknown user"; return; }
+    const p = await res.json();
+    document.getElementById("profilePicture").src = p.picture || "";
+    document.getElementById("profilePicture").style.display = p.picture ? "" : "none";
+    document.getElementById("profileUsername").textContent = p.username || "Anonymous";
+    const badge = document.getElementById("profileBadge");
+    badge.textContent = p.badge;
+    badge.className = "profile-badge badge-" + p.badge.toLowerCase();
+    if (p.created_at) {
+      document.getElementById("profileJoinDate").textContent = "Joined " + new Date(p.created_at).toLocaleDateString();
+    }
+    document.getElementById("profileCharsCreated").textContent = p.characters_created || 0;
+    document.getElementById("profileMsgsSent").textContent = p.messages_sent || 0;
+    document.getElementById("profileLikesReceived").textContent = p.total_likes_received || 0;
+    if (p.characters && p.characters.length > 0) {
+      document.getElementById("profileCharsSection").style.display = "";
+      const list = document.getElementById("profileCharsList");
+      list.innerHTML = "";
+      p.characters.forEach(c => {
+        const card = document.createElement("div");
+        card.className = "profile-char-card";
+        const photoSrc = c.photo || fallbackAvatar(c.name, c.color);
+        const photoStyle = c.photo_zoom != null && c.photo_zoom < 1
+          ? `object-fit:contain;transform:none;`
+          : `object-position:50% ${c.photo_pos != null ? c.photo_pos : 50}%;${c.photo_zoom != null && c.photo_zoom !== 1 ? 'transform:scale('+c.photo_zoom+');' : ''}`;
+        card.innerHTML = `
+          <img class="profile-char-photo" src="${photoSrc}" style="${photoStyle}" alt="${escapeHtml(c.name)}">
+          <div class="profile-char-info">
+            <p class="profile-char-name">${escapeHtml(c.name)}</p>
+            ${c.tagline ? `<p class="profile-char-tagline">${escapeHtml(c.tagline)}</p>` : ""}
+            <p class="profile-char-stats">${formatCount(c.like_count)} likes · ${formatCount(c.message_count)} msgs</p>
+          </div>
+        `;
+        card.addEventListener("click", () => { profileModal.close(); openChat(c.id); });
+        list.appendChild(card);
+      });
+    }
+  } catch(e) {
+    document.getElementById("profileUsername").textContent = "Failed to load profile";
+  }
+}
 
 // ── Group Chats ───────────────────────────────────────────
 const groupChatsView = document.getElementById("groupChatsView");

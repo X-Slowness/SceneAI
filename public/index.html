@@ -413,6 +413,27 @@
   </dialog>
 
   <!-- Generic alert dialog -->
+  <dialog id="profileModal">
+    <div class="profile-modal-content">
+      <button id="closeProfileModal" class="profile-close-btn">&times;</button>
+      <div class="profile-header">
+        <img id="profilePicture" class="profile-picture" src="" alt="">
+        <h2 id="profileUsername" class="profile-username"></h2>
+        <span id="profileBadge" class="profile-badge"></span>
+        <p id="profileJoinDate" class="profile-join-date"></p>
+      </div>
+      <div class="profile-stats">
+        <div class="profile-stat"><span class="profile-stat-num" id="profileCharsCreated">0</span><span class="profile-stat-label">Characters</span></div>
+        <div class="profile-stat"><span class="profile-stat-num" id="profileMsgsSent">0</span><span class="profile-stat-label">Messages</span></div>
+        <div class="profile-stat"><span class="profile-stat-num" id="profileLikesReceived">0</span><span class="profile-stat-label">Likes</span></div>
+      </div>
+      <div id="profileCharsSection" class="profile-chars-section">
+        <h3 class="profile-chars-title">Created Characters</h3>
+        <div id="profileCharsList" class="profile-chars-list"></div>
+      </div>
+    </div>
+  </dialog>
+
   <dialog id="alertModal">
     <div>
       <h3 id="alertModalTitle" style="margin-top:0;"></h3>
