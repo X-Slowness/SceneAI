@@ -1508,7 +1508,15 @@ async function openChat(id) {
   localStorage.setItem("sceneai_activeChat", id);
   const c = characters.find(x => x.id === id);
   activeNameEl.textContent = c.name;
-  activeTaglineEl.textContent = c.creator_name ? `@${c.creator_name}` : "";
+  activeTaglineEl.innerHTML = "";
+  if (c.creator_name) {
+    const link = document.createElement("span");
+    link.className = "card-creator";
+    link.textContent = `@${c.creator_name}`;
+    link.style.cursor = "pointer";
+    link.addEventListener("click", () => openProfile(c.created_by));
+    activeTaglineEl.appendChild(link);
+  }
   activeAvatarEl.src = avatarSrc(c);
   activeAvatarEl.style.objectPosition = `50% ${c.photo_pos != null ? c.photo_pos : 50}%`;
   const avatarZoom = c.photo_zoom != null ? c.photo_zoom : 1;
