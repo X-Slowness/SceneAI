@@ -111,9 +111,9 @@ app.post("/api/admin/restore", requireAdmin, (req, res) => {
         db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
       }
       for (const s of (data.subscriptions || [])) {
-        db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-          .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.created_at);
+        db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+          .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.created_at);
       }
       for (const m of (data.memories || [])) {
         db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)")
@@ -277,10 +277,166 @@ try { db.exec("ALTER TABLE subscriptions ADD COLUMN streak_day INTEGER DEFAULT 0
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN last_claim_date TEXT DEFAULT ''"); } catch(e) {}
 try { db.exec("ALTER TABLE characters ADD COLUMN created_by TEXT DEFAULT ''"); } catch(e) {}
 
+// Quest tracking columns
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_msg_count INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_chars_chatted TEXT DEFAULT '[]'"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_reset_date TEXT DEFAULT ''"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN weekly_msg_count INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN weekly_chars_chatted TEXT DEFAULT '[]'"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN weekly_reset_date TEXT DEFAULT ''"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN total_messages INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN characters_created INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN total_likes_given INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN total_likes_received INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_likes INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN weekly_likes INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_streak_claimed INTEGER DEFAULT 0"); } catch(e) {}
+
 // Seed like_count from likes table for any characters that have 0 but should have more
 db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id) WHERE like_count = 0 AND id IN (SELECT character_id FROM likes)`);
 // Seed message_count from messages table
 db.exec(`UPDATE characters SET message_count = (SELECT COUNT(*) FROM messages WHERE messages.character_id = characters.id) WHERE message_count = 0 AND id IN (SELECT character_id FROM messages)`);
+
+// ── Quests System ──────────────────────────────────────────
+db.exec(`CREATE TABLE IF NOT EXISTS claimed_quests (
+  user_id TEXT NOT NULL,
+  quest_id TEXT NOT NULL,
+  claimed_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, quest_id)
+)`);
+
+const QUESTS = [
+  { id: "daily_3_chats", category: "daily", name: "Social Butterfly", desc: "Chat with 3 different characters", target: 3, field: "daily_chars_chatted", reward: 50 },
+  { id: "daily_10_msgs", category: "daily", name: "Chatterbox", desc: "Send 10 messages", target: 10, field: "daily_msg_count", reward: 40 },
+  { id: "daily_2_likes", category: "daily", name: "Fan Favorite", desc: "Like 2 characters", target: 2, field: "daily_likes", reward: 30 },
+  { id: "daily_streak", category: "daily", name: "Dedicated", desc: "Claim your daily login reward", target: 1, field: "daily_streak_claimed", reward: 25 },
+  { id: "weekly_15_chats", category: "weekly", name: "Conversationalist", desc: "Chat with 15 different characters", target: 15, field: "weekly_chars_chatted", reward: 200 },
+  { id: "weekly_75_msgs", category: "weekly", name: "Wordsmith", desc: "Send 75 messages", target: 75, field: "weekly_msg_count", reward: 150 },
+  { id: "weekly_10_likes", category: "weekly", name: "Tastemaker", desc: "Like 10 characters", target: 10, field: "weekly_likes", reward: 120 },
+  { id: "once_first_char", category: "one_time", name: "Creator", desc: "Create your first character", target: 1, field: "characters_created", reward: 300 },
+  { id: "once_50_msgs", category: "one_time", name: "Veteran", desc: "Send 50 messages total", target: 50, field: "total_messages", reward: 200 },
+  { id: "once_200_msgs", category: "one_time", name: "Legend", desc: "Send 200 messages total", target: 200, field: "total_messages", reward: 500 },
+  { id: "once_5_chars", category: "one_time", name: "World Builder", desc: "Create 5 characters", target: 5, field: "characters_created", reward: 400 },
+];
+
+function ensureQuestRow(userId) {
+  db.prepare(`INSERT INTO subscriptions (user_id, created_at) VALUES (?, ?) ON CONFLICT(user_id) DO NOTHING`).run(userId, Date.now());
+}
+
+function resetQuestCounters(userId, sub) {
+  const today = new Date().toISOString().slice(0, 10);
+  const weekStart = getWeekStart(today);
+  const updates = {};
+  if (sub.daily_reset_date !== today) {
+    updates.daily_msg_count = 0;
+    updates.daily_chars_chatted = "[]";
+    updates.daily_likes = 0;
+    updates.daily_streak_claimed = 0;
+    updates.daily_reset_date = today;
+  }
+  if (sub.weekly_reset_date !== weekStart) {
+    updates.weekly_msg_count = 0;
+    updates.weekly_chars_chatted = "[]";
+    updates.weekly_likes = 0;
+    updates.weekly_reset_date = weekStart;
+  }
+  if (Object.keys(updates).length > 0) {
+    const setClauses = Object.keys(updates).map(k => `${k} = ?`).join(", ");
+    const vals = Object.values(updates);
+    db.prepare(`UPDATE subscriptions SET ${setClauses} WHERE user_id = ?`).run(...vals, userId);
+    return { ...sub, ...updates };
+  }
+  return sub;
+}
+
+function getWeekStart(dateStr) {
+  const d = new Date(dateStr + "T00:00:00Z");
+  const day = d.getUTCDay();
+  const diff = day === 0 ? 6 : day - 1;
+  d.setUTCDate(d.getUTCDate() - diff);
+  return d.toISOString().slice(0, 10);
+}
+
+function trackQuestProgress(userId, field, value) {
+  ensureQuestRow(userId);
+  if (field === "daily_msg_count") {
+    db.prepare(`UPDATE subscriptions SET daily_msg_count = daily_msg_count + 1, weekly_msg_count = weekly_msg_count + 1, total_messages = total_messages + 1 WHERE user_id = ?`).run(userId);
+  } else if (field === "daily_likes") {
+    db.prepare(`UPDATE subscriptions SET daily_likes = daily_likes + 1, weekly_likes = weekly_likes + 1, total_likes_given = total_likes_given + 1 WHERE user_id = ?`).run(userId);
+  } else if (field === "characters_created") {
+    db.prepare(`UPDATE subscriptions SET characters_created = characters_created + 1 WHERE user_id = ?`).run(userId);
+  }
+}
+
+function trackCharChatted(userId, charId, sub) {
+  const today = new Date().toISOString().slice(0, 10);
+  const weekStart = getWeekStart(today);
+  let dailyChatted = JSON.parse(sub.daily_chars_chatted || "[]");
+  let weeklyChatted = JSON.parse(sub.weekly_chars_chatted || "[]");
+  let changed = false;
+  if (!dailyChatted.includes(charId)) { dailyChatted.push(charId); changed = true; }
+  if (!weeklyChatted.includes(charId)) { weeklyChatted.push(charId); changed = true; }
+  if (changed) {
+    db.prepare(`UPDATE subscriptions SET daily_chars_chatted = ?, weekly_chars_chatted = ? WHERE user_id = ?`)
+      .run(JSON.stringify(dailyChatted), JSON.stringify(weeklyChatted), userId);
+  }
+  return { dailyCount: dailyChatted.length, weeklyCount: weeklyChatted.length };
+}
+
+function getQuestProgress(userId) {
+  ensureQuestRow(userId);
+  let sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
+  if (!sub) return [];
+  sub = resetQuestCounters(userId, sub);
+  const claimed = db.prepare("SELECT quest_id FROM claimed_quests WHERE user_id = ?").all(userId).map(r => r.quest_id);
+  return QUESTS.map(q => {
+    let progress = 0;
+    if (q.field === "daily_chars_chatted") {
+      progress = JSON.parse(sub.daily_chars_chatted || "[]").length;
+    } else if (q.field === "weekly_chars_chatted") {
+      progress = JSON.parse(sub.weekly_chars_chatted || "[]").length;
+    } else {
+      progress = sub[q.field] || 0;
+    }
+    const complete = progress >= q.target;
+    const isClaimed = claimed.includes(q.id);
+    return { ...q, progress: Math.min(progress, q.target), complete, claimed: isClaimed };
+  });
+}
+
+// GET /api/quests
+app.get("/api/quests", (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) return res.status(400).json({ error: "userId required." });
+  const quests = getQuestProgress(userId);
+  res.json(quests);
+});
+
+// POST /api/quests/:id/claim
+app.post("/api/quests/:id/claim", (req, res) => {
+  const userId = req.headers["x-user-id"];
+  if (!userId) return res.status(401).json({ error: "Sign in required." });
+  const quest = QUESTS.find(q => q.id === req.params.id);
+  if (!quest) return res.status(404).json({ error: "Quest not found." });
+  const existing = db.prepare("SELECT 1 FROM claimed_quests WHERE user_id = ? AND quest_id = ?").get(userId, quest.id);
+  if (existing) return res.status(400).json({ error: "Already claimed." });
+  ensureQuestRow(userId);
+  let sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
+  if (!sub) return res.status(400).json({ error: "No subscription row." });
+  sub = resetQuestCounters(userId, sub);
+  let progress = 0;
+  if (quest.field === "daily_chars_chatted") progress = JSON.parse(sub.daily_chars_chatted || "[]").length;
+  else if (quest.field === "weekly_chars_chatted") progress = JSON.parse(sub.weekly_chars_chatted || "[]").length;
+  else progress = sub[quest.field] || 0;
+  if (progress < quest.target) return res.status(400).json({ error: "Quest not complete." });
+  db.prepare("INSERT INTO claimed_quests (user_id, quest_id, claimed_at) VALUES (?, ?, ?)").run(userId, quest.id, Date.now());
+  db.prepare("UPDATE subscriptions SET coins = coins + ? WHERE user_id = ?").run(quest.reward, userId);
+  saveBackup();
+  const updated = db.prepare("SELECT coins FROM subscriptions WHERE user_id = ?").get(userId);
+  res.json({ ok: true, reward: quest.reward, total_coins: updated.coins });
+});
+
+// ── End Quests System ──────────────────────────────────────
 
 // Restore from backup or seed characters if DB is empty
 const msgCount = db.prepare("SELECT COUNT(*) as c FROM messages").get().c;
@@ -344,8 +500,8 @@ if (needsRestore) {
             db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
           }
           for (const s of (data.subscriptions || [])) {
-            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-              .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.created_at);
+            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+              .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.created_at);
           }
           for (const m of (data.memories || [])) {
             db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)").run(m.id, m.character_id, m.user_id, m.content, m.created_at);
@@ -632,6 +788,7 @@ app.post("/api/daily-reward/claim", (req, res) => {
   const reward = DAILY_REWARDS[nextDay] || 50;
   db.prepare("UPDATE subscriptions SET coins = coins + ?, streak_day = ?, last_claim_date = ? WHERE user_id = ?")
     .run(reward, nextDay, today, userId);
+  db.prepare("UPDATE subscriptions SET daily_streak_claimed = 1 WHERE user_id = ?").run(userId);
   saveBackup();
   const updated = db.prepare("SELECT coins, streak_day FROM subscriptions WHERE user_id = ?").get(userId);
   res.json({ ok: true, streak_day: nextDay, reward, total_coins: updated.coins });
@@ -678,6 +835,7 @@ app.post("/api/characters", (req, res) => {
   }
 
   const row = db.prepare("SELECT * FROM characters WHERE id = ?").get(id);
+  trackQuestProgress(userId, "characters_created");
   saveBackup();
   res.json({ ...row, tags: JSON.parse(row.tags || "[]"), history: [] });
 });
@@ -738,6 +896,7 @@ app.post("/api/characters/:id/like", (req, res) => {
   try {
     db.prepare("INSERT INTO likes (character_id, user_id) VALUES (?, ?)").run(req.params.id, userId);
     db.prepare("UPDATE characters SET like_count = like_count + 1 WHERE id = ?").run(req.params.id);
+    trackQuestProgress(userId, "daily_likes");
   } catch (e) {}
   const count = db.prepare("SELECT like_count FROM characters WHERE id = ?").get(req.params.id).like_count;
   saveBackup();
@@ -1195,6 +1354,15 @@ app.post("/api/characters/:id/messages", (req, res) => {
   );
   stmt.run(req.params.id, userId, role, content, ts || Date.now());
   db.prepare("UPDATE characters SET message_count = message_count + 1 WHERE id = ?").run(req.params.id);
+  if (role === "user") {
+    ensureQuestRow(userId);
+    let sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
+    if (sub) {
+      sub = resetQuestCounters(userId, sub);
+      trackQuestProgress(userId, "daily_msg_count");
+      trackCharChatted(userId, req.params.id, sub);
+    }
+  }
   saveBackup();
   res.json({ ok: true });
 });

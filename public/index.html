@@ -51,6 +51,10 @@
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           Most Liked
         </button>
+        <button id="questsBtn" class="nav-btn" title="Quests">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>
+          Quests
+        </button>
         <button id="newCharacterBtn" class="nav-btn create-nav-btn" style="display:none">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
           Create Character
@@ -198,6 +202,19 @@
         </header>
         <section class="gallery-section">
           <div id="myCharactersGallery" class="gallery"></div>
+        </section>
+      </div>
+
+      <!-- Quests view -->
+      <div id="questsView" hidden>
+        <header class="banner banner-sm">
+          <div class="banner-inner">
+            <h1 class="wordmark">Quests</h1>
+            <p class="banner-tag">Complete quests to earn coins.</p>
+          </div>
+        </header>
+        <section class="quests-section">
+          <div id="questsContent" class="quests-content"></div>
         </section>
       </div>
 

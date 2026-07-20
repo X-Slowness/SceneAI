@@ -480,10 +480,13 @@ const favoritesGalleryEl = document.getElementById("favoritesGallery");
 const trendingGalleryEl = document.getElementById("trendingGallery");
 const mostLikedGalleryEl = document.getElementById("mostLikedGallery");
 const myCharactersGalleryEl = document.getElementById("myCharactersGallery");
+const questsView = document.getElementById("questsView");
+const questsContentEl = document.getElementById("questsContent");
 const homeNavBtn = document.getElementById("homeNavBtn");
 const recentChatsBtn = document.getElementById("recentChatsBtn");
 const favoritesBtn = document.getElementById("favoritesBtn");
 const myCharactersBtn = document.getElementById("myCharactersBtn");
+const questsBtn = document.getElementById("questsBtn");
 const trendingBtn = document.getElementById("trendingBtn");
 const mostLikedBtn = document.getElementById("mostLikedBtn");
 
@@ -1262,6 +1265,7 @@ function setTab(tab) {
   myCharactersBtn.classList.toggle("active", tab === "myCharacters");
   trendingBtn.classList.toggle("active", tab === "trending");
   mostLikedBtn.classList.toggle("active", tab === "mostLiked");
+  questsBtn.classList.toggle("active", tab === "quests");
   groupChatsBtn.classList.toggle("active", tab === "groupChats");
   if (tab) localStorage.setItem("sceneai_activeTab", tab);
 }
@@ -1277,6 +1281,7 @@ function showGallery() {
   trendingView.hidden = true;
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
+  questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   galleryView.hidden = false;
@@ -1294,6 +1299,7 @@ function showRecentChats() {
   trendingView.hidden = true;
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
+  questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   recentChatsView.hidden = false;
@@ -1310,6 +1316,7 @@ function showFavorites() {
   trendingView.hidden = true;
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
+  questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   favoritesView.hidden = false;
@@ -1326,6 +1333,7 @@ function showTrending() {
   favoritesView.hidden = true;
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
+  questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   trendingView.hidden = false;
@@ -1342,6 +1350,7 @@ function showMostLiked() {
   favoritesView.hidden = true;
   trendingView.hidden = true;
   myCharactersView.hidden = true;
+  questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   mostLikedView.hidden = false;
@@ -1358,6 +1367,7 @@ function showMyCharacters() {
   favoritesView.hidden = true;
   trendingView.hidden = true;
   mostLikedView.hidden = true;
+  questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   myCharactersView.hidden = false;
@@ -1380,10 +1390,98 @@ function renderMyCharactersGallery() {
   mine.forEach(c => myCharactersGalleryEl.appendChild(buildCard(c, { showEdit: true })));
 }
 
+function showQuests() {
+  activeId = null;
+  chatView.hidden = true;
+  galleryView.hidden = true;
+  recentChatsView.hidden = true;
+  favoritesView.hidden = true;
+  trendingView.hidden = true;
+  mostLikedView.hidden = true;
+  myCharactersView.hidden = true;
+  groupChatView.hidden = true;
+  groupChatsView.hidden = true;
+  questsView.hidden = false;
+  setTab("quests");
+  document.querySelector(".app").classList.remove("chat-active");
+  renderQuests();
+}
+
+async function renderQuests() {
+  if (!currentUser) {
+    questsContentEl.innerHTML = `<p class="card-desc">Sign in to see your quests.</p>`;
+    return;
+  }
+  questsContentEl.innerHTML = `<p class="quest-loading">Loading quests...</p>`;
+  try {
+    const res = await fetch(`/api/quests?userId=${currentUser.id}`);
+    const quests = await res.json();
+    if (!quests.length) {
+      questsContentEl.innerHTML = `<p class="card-desc">No quests available yet.</p>`;
+      return;
+    }
+    const daily = quests.filter(q => q.category === "daily");
+    const weekly = quests.filter(q => q.category === "weekly");
+    const oneTime = quests.filter(q => q.category === "one_time");
+    let html = "";
+    if (daily.length) {
+      html += `<div class="quest-category"><h3 class="quest-category-title">Daily Quests</h3><div class="quest-list">${daily.map(questCardHtml).join("")}</div></div>`;
+    }
+    if (weekly.length) {
+      html += `<div class="quest-category"><h3 class="quest-category-title">Weekly Quests</h3><div class="quest-list">${weekly.map(questCardHtml).join("")}</div></div>`;
+    }
+    if (oneTime.length) {
+      html += `<div class="quest-category"><h3 class="quest-category-title">One-Time Quests</h3><div class="quest-list">${oneTime.map(questCardHtml).join("")}</div></div>`;
+    }
+    questsContentEl.innerHTML = html;
+    questsContentEl.querySelectorAll(".quest-claim-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        btn.textContent = "...";
+        try {
+          const res = await fetch(`/api/quests/${btn.dataset.questId}/claim`, { method: "POST", headers: { "x-user-id": currentUser.id } });
+          const data = await res.json();
+          if (data.ok) {
+            btn.textContent = "Claimed!";
+            btn.classList.add("claimed");
+            renderQuests();
+          } else {
+            btn.textContent = "Error";
+            btn.disabled = false;
+          }
+        } catch(e) {
+          btn.textContent = "Error";
+          btn.disabled = false;
+        }
+      });
+    });
+  } catch(e) {
+    questsContentEl.innerHTML = `<p class="card-desc">Failed to load quests.</p>`;
+  }
+}
+
+function questCardHtml(q) {
+  const pct = q.target > 0 ? Math.min(100, Math.round((q.progress / q.target) * 100)) : 0;
+  const claimClass = q.claimed ? " claimed" : (q.complete ? " ready" : "");
+  const claimText = q.claimed ? "Claimed" : (q.complete ? `Claim +${q.reward}` : `${q.progress}/${q.target}`);
+  const claimDisabled = q.claimed || !q.complete ? "disabled" : "";
+  return `<div class="quest-card${q.complete && !q.claimed ? " quest-complete" : ""}">
+    <div class="quest-info">
+      <p class="quest-name">${escapeHtml(q.name)}</p>
+      <p class="quest-desc">${escapeHtml(q.desc)}</p>
+    </div>
+    <div class="quest-right">
+      <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${pct}%"></div></div>
+      <button class="quest-claim-btn${claimClass}" data-quest-id="${q.id}" ${claimDisabled}>${claimText}</button>
+    </div>
+  </div>`;
+}
+
 homeNavBtn.addEventListener("click", showGallery);
 recentChatsBtn.addEventListener("click", showRecentChats);
 favoritesBtn.addEventListener("click", showFavorites);
 myCharactersBtn.addEventListener("click", showMyCharacters);
+questsBtn.addEventListener("click", showQuests);
 trendingBtn.addEventListener("click", showTrending);
 mostLikedBtn.addEventListener("click", showMostLiked);
 
@@ -1409,6 +1507,7 @@ async function openChat(id) {
   galleryView.hidden = true;
   recentChatsView.hidden = true;
   myCharactersView.hidden = true;
+  questsView.hidden = true;
   chatView.hidden = false;
   document.querySelector(".app").classList.add("chat-active");
   currentMessages = await loadMessages(id);
@@ -2312,6 +2411,7 @@ function showGroupChats() {
   trendingView.hidden = true;
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
+  questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = false;
   setTab("groupChats");
@@ -2518,7 +2618,7 @@ async function init() {
   characters = shuffleArray(await loadCharacters());
   const savedTab = localStorage.getItem("sceneai_activeTab");
   const savedChat = localStorage.getItem("sceneai_activeChat");
-  const tabMap = { home: showGallery, chats: showRecentChats, favorites: showFavorites, myCharacters: showMyCharacters, trending: showTrending, mostLiked: showMostLiked, groupChats: showGroupChats };
+  const tabMap = { home: showGallery, chats: showRecentChats, favorites: showFavorites, myCharacters: showMyCharacters, trending: showTrending, mostLiked: showMostLiked, quests: showQuests, groupChats: showGroupChats };
   if (savedChat && characters.find(x => x.id === savedChat)) {
     openChat(savedChat);
   } else if (savedTab && tabMap[savedTab]) {
