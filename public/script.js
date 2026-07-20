@@ -1291,6 +1291,7 @@ function showGallery() {
   questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
+  publicProfileView.hidden = true;
   galleryView.hidden = false;
   setTab("home");
   renderGallery();
@@ -1309,6 +1310,7 @@ function showRecentChats() {
   questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
+  publicProfileView.hidden = true;
   recentChatsView.hidden = false;
   setTab("chats");
   document.querySelector(".app").classList.remove("chat-active");
@@ -1326,6 +1328,7 @@ function showFavorites() {
   questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
+  publicProfileView.hidden = true;
   favoritesView.hidden = false;
   setTab("favorites");
   document.querySelector(".app").classList.remove("chat-active");
@@ -1343,6 +1346,7 @@ function showTrending() {
   questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
+  publicProfileView.hidden = true;
   trendingView.hidden = false;
   setTab("trending");
   document.querySelector(".app").classList.remove("chat-active");
@@ -1360,6 +1364,7 @@ function showMostLiked() {
   questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
+  publicProfileView.hidden = true;
   mostLikedView.hidden = false;
   setTab("mostLiked");
   document.querySelector(".app").classList.remove("chat-active");
@@ -1377,6 +1382,7 @@ function showMyCharacters() {
   questsView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
+  publicProfileView.hidden = true;
   myCharactersView.hidden = false;
   setTab("myCharacters");
   document.querySelector(".app").classList.remove("chat-active");
@@ -1408,6 +1414,7 @@ function showQuests() {
   myCharactersView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
+  publicProfileView.hidden = true;
   questsView.hidden = false;
   setTab("quests");
   document.querySelector(".app").classList.remove("chat-active");
@@ -1515,6 +1522,7 @@ async function openChat(id) {
   recentChatsView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
+  publicProfileView.hidden = true;
   chatView.hidden = false;
   document.querySelector(".app").classList.add("chat-active");
   currentMessages = await loadMessages(id);
@@ -2299,15 +2307,25 @@ document.getElementById("closeAlertModal").addEventListener("click", () => {
   document.getElementById("alertModal").close();
 });
 
-// ── Public Profile Modal ──────────────────────────────────
-const publicProfileModal = document.getElementById("publicProfileModal");
+// ── Public Profile (full-page view) ───────────────────────
+const publicProfileView = document.getElementById("publicProfileView");
 
-document.getElementById("closePublicProfileModal").addEventListener("click", () => publicProfileModal.close());
-publicProfileModal.addEventListener("click", (e) => { if (e.target === publicProfileModal) publicProfileModal.close(); });
+document.getElementById("closePublicProfileModal").addEventListener("click", showGallery);
 
 async function openProfile(userId) {
   if (!userId) return;
-  publicProfileModal.showModal();
+  chatView.hidden = true;
+  recentChatsView.hidden = true;
+  favoritesView.hidden = true;
+  trendingView.hidden = true;
+  mostLikedView.hidden = true;
+  myCharactersView.hidden = true;
+  questsView.hidden = true;
+  groupChatView.hidden = true;
+  groupChatsView.hidden = true;
+  galleryView.hidden = true;
+  publicProfileView.hidden = false;
+  document.querySelector(".app").classList.remove("chat-active");
   document.getElementById("publicProfileUsername").textContent = "Loading...";
   document.getElementById("publicProfileBadge").textContent = "";
   document.getElementById("publicProfileBadge").className = "profile-badge";
@@ -2353,7 +2371,7 @@ async function openProfile(userId) {
             <p class="profile-char-stats">${formatCount(c.like_count)} likes · ${formatCount(c.message_count)} msgs</p>
           </div>
         `;
-        card.addEventListener("click", () => { publicProfileModal.close(); openChat(c.id); });
+        card.addEventListener("click", () => { openChat(c.id); });
         list.appendChild(card);
       });
     }
@@ -2504,6 +2522,7 @@ async function openGroupChat(groupId) {
     groupChatAvatarsEl.appendChild(img);
   });
   groupChatsView.hidden = true;
+  publicProfileView.hidden = true;
   groupChatView.hidden = false;
   setTab(null);
   const msgs = await loadGroupChatMessages(groupId);

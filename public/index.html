@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SceneAI — where your characters are waiting</title>
 <link rel="icon" type="image/png" href="logo.png">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 </head>
 <body>
@@ -297,6 +297,32 @@
         </div>
       </div>
 
+      <!-- Public profile full-page view -->
+      <div id="publicProfileView" hidden>
+        <header class="profile-hero">
+          <button id="closePublicProfileModal" class="back-btn" aria-label="Back">&larr;</button>
+          <div class="profile-hero-inner">
+            <div class="profile-avatar-wrap">
+              <img id="publicProfilePicture" class="profile-avatar" src="" alt="">
+            </div>
+            <h2 id="publicProfileUsername" class="profile-hero-name"></h2>
+            <span id="publicProfileBadge" class="profile-badge"></span>
+            <p id="publicProfileJoinDate" class="profile-hero-join"></p>
+          </div>
+          <div class="profile-hero-stats">
+            <div class="profile-hero-stat"><span class="phs-num" id="publicProfileCharsCreated">0</span><span class="phs-label">Characters</span></div>
+            <div class="profile-hero-stat"><span class="phs-num" id="publicProfileMsgsSent">0</span><span class="phs-label">Messages</span></div>
+            <div class="profile-hero-stat"><span class="phs-num" id="publicProfileLikesReceived">0</span><span class="phs-label">Likes</span></div>
+          </div>
+        </header>
+        <section class="profile-chars-section">
+          <div id="publicProfileCharsSection">
+            <h3 class="profile-chars-title">Created Characters</h3>
+            <div id="publicProfileCharsList" class="profile-chars-grid"></div>
+          </div>
+        </section>
+      </div>
+
     </main>
   </div>
 
@@ -408,28 +434,6 @@
       <p id="signInRequiredMsg">Sign in with Google account first.</p>
       <div class="modal-actions">
         <button type="button" id="closeSignInRequired">OK</button>
-      </div>
-    </div>
-  </dialog>
-
-  <!-- Generic alert dialog -->
-  <dialog id="publicProfileModal">
-    <div class="profile-modal-content">
-      <button id="closePublicProfileModal" class="profile-close-btn">&times;</button>
-      <div class="profile-header">
-        <img id="publicProfilePicture" class="profile-picture" src="" alt="">
-        <h2 id="publicProfileUsername" class="profile-username"></h2>
-        <span id="publicProfileBadge" class="profile-badge"></span>
-        <p id="publicProfileJoinDate" class="profile-join-date"></p>
-      </div>
-      <div class="profile-stats">
-        <div class="profile-stat"><span class="profile-stat-num" id="publicProfileCharsCreated">0</span><span class="profile-stat-label">Characters</span></div>
-        <div class="profile-stat"><span class="profile-stat-num" id="publicProfileMsgsSent">0</span><span class="profile-stat-label">Messages</span></div>
-        <div class="profile-stat"><span class="profile-stat-num" id="publicProfileLikesReceived">0</span><span class="profile-stat-label">Likes</span></div>
-      </div>
-      <div id="publicProfileCharsSection" class="profile-chars-section">
-        <h3 class="profile-chars-title">Created Characters</h3>
-        <div id="publicProfileCharsList" class="profile-chars-list"></div>
       </div>
     </div>
   </dialog>
@@ -689,6 +693,6 @@
       <button id="confirmOk" class="danger" style="background:none;border:1px solid #c0392b;color:#c0392b;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;">Confirm</button>
     </div>
   </dialog>
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>
