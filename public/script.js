@@ -1508,7 +1508,7 @@ async function openChat(id) {
   localStorage.setItem("sceneai_activeChat", id);
   const c = characters.find(x => x.id === id);
   activeNameEl.textContent = c.name;
-  activeTaglineEl.textContent = c.tagline || "";
+  activeTaglineEl.textContent = c.creator_name ? `@${c.creator_name}` : "";
   activeAvatarEl.src = avatarSrc(c);
   activeAvatarEl.style.objectPosition = `50% ${c.photo_pos != null ? c.photo_pos : 50}%`;
   const avatarZoom = c.photo_zoom != null ? c.photo_zoom : 1;
