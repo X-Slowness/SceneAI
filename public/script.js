@@ -2174,6 +2174,11 @@ userMenuBtn.addEventListener("click", (e) => {
   profileModal.showModal();
 });
 
+document.getElementById("viewMyProfileBtn").addEventListener("click", () => {
+  profileModal.close();
+  openProfile(currentUser.id);
+});
+
 profilePicInput.addEventListener("change", () => {
   const file = profilePicInput.files[0];
   if (!file) return;
