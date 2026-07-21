@@ -1430,7 +1430,7 @@ async function renderQuests() {
   }
   questsContentEl.innerHTML = `<p class="quest-loading">Loading quests...</p>`;
   try {
-    const res = await fetch(`/api/quests?userId=${currentUser.id}`);
+    const res = await fetch(`/api/quests?userId=${currentUser.id}&tz=${-new Date().getTimezoneOffset()}`);
     const quests = await res.json();
     if (!quests.length) {
       questsContentEl.innerHTML = `<p class="card-desc">No quests available yet.</p>`;

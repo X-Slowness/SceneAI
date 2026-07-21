@@ -291,6 +291,7 @@ try { db.exec("ALTER TABLE subscriptions ADD COLUMN total_likes_received INTEGER
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_likes INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN weekly_likes INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_streak_claimed INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN timezone_offset INTEGER DEFAULT 0"); } catch(e) {}
 
 // Seed like_count from likes table for any characters that have 0 but should have more
 db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id) WHERE like_count = 0 AND id IN (SELECT character_id FROM likes)`);
@@ -323,9 +324,27 @@ function ensureQuestRow(userId) {
   db.prepare(`INSERT INTO subscriptions (user_id, created_at) VALUES (?, ?) ON CONFLICT(user_id) DO NOTHING`).run(userId, Date.now());
 }
 
+function getLocalDate(tzOffset) {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const local = new Date(utc + tzOffset * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+function getWeekStartLocal(dateStr, tzOffset) {
+  const d = new Date(dateStr + "T00:00:00Z");
+  const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+  const local = new Date(utc + tzOffset * 60000);
+  const day = local.getUTCDay();
+  const diff = day === 0 ? 6 : day - 1;
+  local.setUTCDate(local.getUTCDate() - diff);
+  return local.toISOString().slice(0, 10);
+}
+
 function resetQuestCounters(userId, sub) {
-  const today = new Date().toISOString().slice(0, 10);
-  const weekStart = getWeekStart(today);
+  const tzOffset = sub.timezone_offset || 0;
+  const today = getLocalDate(tzOffset);
+  const weekStart = getWeekStartLocal(today, tzOffset);
   const updates = {};
   if (sub.daily_reset_date !== today) {
     updates.daily_msg_count = 0;
@@ -369,8 +388,9 @@ function trackQuestProgress(userId, field, value) {
 }
 
 function trackCharChatted(userId, charId, sub) {
-  const today = new Date().toISOString().slice(0, 10);
-  const weekStart = getWeekStart(today);
+  const tzOffset = sub.timezone_offset || 0;
+  const today = getLocalDate(tzOffset);
+  const weekStart = getWeekStartLocal(today, tzOffset);
   let dailyChatted = JSON.parse(sub.daily_chars_chatted || "[]");
   let weeklyChatted = JSON.parse(sub.weekly_chars_chatted || "[]");
   let changed = false;
@@ -408,6 +428,9 @@ function getQuestProgress(userId) {
 app.get("/api/quests", (req, res) => {
   const userId = req.query.userId;
   if (!userId) return res.status(400).json({ error: "userId required." });
+  const tzOffset = parseInt(req.query.tz) || 0;
+  ensureQuestRow(userId);
+  db.prepare("UPDATE subscriptions SET timezone_offset = ? WHERE user_id = ?").run(tzOffset, userId);
   const quests = getQuestProgress(userId);
   res.json(quests);
 });
