@@ -387,6 +387,7 @@ function applyTheme(theme) {
 }
 
 function applyMsgColor(color) {
+  if (activeChatTheme && activeChatTheme !== "default") return;
   document.documentElement.style.setProperty("--user-msg", color);
   const selected = document.querySelector(`.color-swatch[data-color="${color}"]`);
   document.querySelectorAll(".color-swatch").forEach(s => s.style.borderColor = "transparent");
@@ -397,6 +398,7 @@ let chatThemes = [];
 let activeChatTheme = settings.chatTheme || "default";
 
 function applyChatTheme(themeId) {
+  document.documentElement.style.removeProperty("--user-msg");
   document.body.classList.remove("theme-midnight", "theme-ocean", "theme-sunset", "theme-forest", "theme-rose", "theme-neon", "theme-paper", "theme-galaxy");
   if (themeId && themeId !== "default") {
     document.body.classList.add("theme-" + themeId);
@@ -404,6 +406,9 @@ function applyChatTheme(themeId) {
   activeChatTheme = themeId;
   settings.chatTheme = themeId;
   saveSettings(settings);
+  if (!themeId || themeId === "default") {
+    applyMsgColor(settings.msgColor || "#c9952c");
+  }
   if (currentUser) {
     fetch("/api/themes/set", {
       method: "POST",
@@ -1129,17 +1134,17 @@ const longerMsgToggle = document.getElementById("longerMsgToggle");
 
 function updateLongerMsgUI() {
   longerMsgRow.style.display = isSubscriber ? "" : "none";
-  const thumb = longerMsgToggle.querySelector(".theme-toggle-thumb");
-  const darkLabel = longerMsgToggle.querySelector(".dark-label");
-  const lightLabel = longerMsgToggle.querySelector(".light-label");
+  const thumb = longerMsgToggle.querySelector(".toggle-thumb");
+  const offLabel = longerMsgToggle.querySelector(".toggle-label-off");
+  const onLabel = longerMsgToggle.querySelector(".toggle-label-on");
   if (longerMessages) {
     thumb.style.transform = "translateX(20px)";
-    darkLabel.style.color = "var(--text-dim)";
-    lightLabel.style.color = "var(--accent-bright)";
+    offLabel.style.color = "var(--text-dim)";
+    onLabel.style.color = "var(--accent-bright)";
   } else {
     thumb.style.transform = "";
-    darkLabel.style.color = "var(--accent-bright)";
-    lightLabel.style.color = "var(--text-dim)";
+    offLabel.style.color = "var(--accent-bright)";
+    onLabel.style.color = "var(--text-dim)";
   }
 }
 
