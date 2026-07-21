@@ -29,6 +29,7 @@ body.light {
   --accent-bright: #c9952c;
   --accent-dim: #d4b06a;
   --card-bg: #ffffff;
+  --user-msg: #b5852a;
 }
 
 * { box-sizing: border-box; }
@@ -1869,11 +1870,16 @@ dialog input[type="color"] {
 }
 
 /* ── Light mode overrides ─────────────────────────────────── */
+body.light .main-content {
+  background: var(--bg);
+}
 body.light .banner {
   background:
     radial-gradient(ellipse at 50% 0%, rgba(181,133,42,0.08) 0%, transparent 60%),
     var(--bg);
 }
+body.light .wordmark { text-shadow: none; }
+body.light .eyebrow { text-shadow: none; }
 body.light .msg.character {
   background: var(--panel);
   border-color: var(--border);
@@ -1881,6 +1887,8 @@ body.light .msg.character {
 body.light .msg.character .emph {
   color: #6d28d9;
 }
+body.light .msg.character .bold { color: var(--text); }
+body.light .msg.character .plain { color: var(--text); }
 body.light .msg.typing {
   background: var(--panel);
   border-color: var(--border);
@@ -1895,31 +1903,38 @@ body.light .msg-regen-btn,
 body.light .back-btn,
 body.light .chat-menu-btn {
   background: rgba(255,255,255,0.95);
+  color: var(--text);
 }
 body.light .chat-header {
   background: var(--panel);
+  color: var(--text);
 }
+body.light .chat-header .char-name { color: var(--text); }
 body.light .composer {
   background: var(--panel);
 }
 body.light .composer textarea {
   background: var(--bg);
   border-color: var(--border);
+  color: var(--text);
 }
 body.light .user-menu-btn {
   background: rgba(255,255,255,0.9);
+  color: var(--text);
 }
 body.light .user-dropdown {
   background: var(--panel);
 }
 body.light dialog {
   background: var(--panel);
+  color: var(--text);
 }
 body.light dialog input[type="text"],
 body.light dialog textarea,
 body.light dialog select {
   background: var(--bg);
   border-color: var(--border);
+  color: var(--text);
 }
 body.light .photo-edit-btn {
   background: var(--bg);
@@ -1928,10 +1943,41 @@ body.light .photo-edit-btn {
 body.light .msg-edit-area textarea {
   background: var(--bg);
   border-color: var(--border);
+  color: var(--text);
 }
 body.light .msg-dropdown {
   background: var(--panel);
 }
+body.light .side-panel {
+  background: var(--panel);
+  border-left-color: var(--border);
+}
+body.light .side-panel .side-panel-header { color: var(--text); }
+body.light .memory-item { background: var(--bg); border-color: var(--border); color: var(--text); }
+body.light .memory-input-row input {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+body.light .nav-btn { color: var(--text-dim); }
+body.light .nav-btn:hover { color: var(--text); background: var(--panel-hover); }
+body.light .nav-btn.active { color: var(--accent); background: rgba(181,133,42,0.1); border-color: rgba(181,133,42,0.25); }
+body.light .coin-badge { background: rgba(181,133,42,0.1); border-color: rgba(181,133,42,0.3); color: var(--accent); }
+body.light .card-name { color: var(--text); }
+body.light .card-tagline { color: var(--text-dim); }
+body.light .card-chat-count { color: var(--accent); }
+body.light .gallery-section { color: var(--text); }
+body.light .search-input { background: var(--bg); border-color: var(--border); color: var(--text); }
+body.light .filter-btn { color: var(--text-dim); border-color: var(--border); }
+body.light .filter-btn.active { color: var(--accent); border-color: var(--accent); }
+body.light .msg.user .emph { color: #f0d0ff; }
+body.light .msg.user .plain { color: #ffffff; }
+body.light .msg.user .bold { color: #ffffff; }
+body.light .theme-toggle-thumb { background: var(--text); }
+body.light .theme-toggle-label.dark-label { color: var(--text-dim); }
+body.light .theme-toggle-label.light-label { color: var(--accent-bright); }
+body.light .longer-toggle .toggle-thumb { background: var(--text); }
+body.light .modal-actions button:not(.primary):not(.danger-btn) { color: var(--text-dim); }
 
 /* ── Group Chat ──────────────────────────────────────────── */
 .group-chat-avatars {
@@ -2141,18 +2187,6 @@ body.light .msg-dropdown {
 .memory-input-row .primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-body.light .side-panel {
-  background: var(--panel);
-}
-body.light .memory-item {
-  background: var(--bg);
-  border-color: var(--border);
-}
-body.light .memory-input-row input {
-  background: var(--bg);
-  border-color: var(--border);
 }
 
 /* ── Membership Modal ─────────────────────────────────── */
