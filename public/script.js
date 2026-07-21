@@ -416,6 +416,7 @@ function applyChatTheme(themeId) {
       body: JSON.stringify({ themeId })
     }).catch(() => {});
   }
+  updateThemeGridUI();
 }
 
 async function fetchAndRenderThemes() {
@@ -428,31 +429,57 @@ async function fetchAndRenderThemes() {
     settings.chatTheme = activeChatTheme;
     saveSettings(settings);
     applyChatTheme(activeChatTheme);
-    const grid = document.getElementById("themesGrid");
-    if (!grid) return;
-    grid.innerHTML = "";
-    for (const t of chatThemes) {
-      const card = document.createElement("div");
-      card.className = "theme-card" + (t.id === activeChatTheme ? " active" : "") + (t.owned ? " owned" : "");
-      const preview = getThemePreviewColors(t.id);
-      card.innerHTML = `
-        <div class="theme-card-preview" style="background:${preview.bg}">
-          <div class="mini-bubble user" style="background:${preview.user}"></div>
-          <div class="mini-bubble char" style="background:${preview.char};border:1px solid ${preview.border}"></div>
-        </div>
-        <div class="theme-card-info">
-          <div class="theme-card-name">${t.name}</div>
-          ${t.id === activeChatTheme ? '<div class="theme-card-active">Active</div>' :
-            t.owned ? '<div class="theme-card-buy" style="color:var(--accent)">Equipped</div>' :
-            t.price === 0 ? '<div class="theme-card-buy">Free</div>' :
-            `<div class="theme-card-buy">${t.price} coins</div>`}
-        </div>`;
-      card.addEventListener("click", () => handleThemeClick(t));
-      grid.appendChild(card);
-    }
+    renderThemeGrid();
   } catch (e) {
     console.error("Failed to load themes:", e);
   }
+}
+
+function renderThemeGrid() {
+  const grid = document.getElementById("themesGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  for (const t of chatThemes) {
+    const card = document.createElement("div");
+    card.className = "theme-card" + (t.id === activeChatTheme ? " active" : "") + (t.owned ? " owned" : "");
+    const preview = getThemePreviewColors(t.id);
+    card.innerHTML = `
+      <div class="theme-card-preview" style="background:${preview.bg}">
+        <div class="mini-bubble user" style="background:${preview.user}"></div>
+        <div class="mini-bubble char" style="background:${preview.char};border:1px solid ${preview.border}"></div>
+      </div>
+      <div class="theme-card-info">
+        <div class="theme-card-name">${t.name}</div>
+        ${t.id === activeChatTheme ? '<div class="theme-card-active">Active</div>' :
+          t.owned ? '<div class="theme-card-buy" style="color:var(--accent)">Equipped</div>' :
+          t.price === 0 ? '<div class="theme-card-buy">Free</div>' :
+          `<div class="theme-card-buy">${t.price} coins</div>`}
+      </div>`;
+    card.addEventListener("click", () => handleThemeClick(t));
+    grid.appendChild(card);
+  }
+}
+
+function updateThemeGridUI() {
+  document.querySelectorAll(".theme-card").forEach(card => {
+    const name = card.querySelector(".theme-card-name");
+    if (!name) return;
+    const theme = chatThemes.find(t => t.name === name.textContent);
+    if (!theme) return;
+    card.classList.toggle("active", theme.id === activeChatTheme);
+    const info = card.querySelector(".theme-card-info > :last-child");
+    if (info) {
+      if (theme.id === activeChatTheme) {
+        info.className = "theme-card-active";
+        info.textContent = "Active";
+        info.style.color = "";
+      } else if (theme.owned) {
+        info.className = "theme-card-buy";
+        info.textContent = "Equipped";
+        info.style.color = "var(--accent)";
+      }
+    }
+  });
 }
 
 function getThemePreviewColors(id) {
@@ -474,7 +501,6 @@ async function handleThemeClick(t) {
   if (t.id === activeChatTheme) return;
   if (t.owned || t.price === 0) {
     applyChatTheme(t.id);
-    fetchAndRenderThemes();
     return;
   }
   const isSub = coinInfo.is_subscriber || (typeof isAdmin !== "undefined" && isAdmin);
@@ -496,8 +522,8 @@ async function handleThemeClick(t) {
     if (!res.ok) { alert(data.error || "Failed to buy theme"); return; }
     coinInfo.coins = data.coins;
     document.getElementById("coinCount").textContent = coinInfo.coins.toLocaleString();
+    t.owned = true;
     applyChatTheme(t.id);
-    fetchAndRenderThemes();
   } catch (e) {
     alert("Failed to buy theme.");
   }

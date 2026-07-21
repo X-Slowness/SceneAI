@@ -2707,6 +2707,9 @@ body.theme-forest .pkg-badge, body.theme-rose .pkg-badge, body.theme-galaxy .pkg
 
 /* Longer messages toggle (independent of dark/light mode) */
 .longer-toggle .toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
   width: 18px;
   height: 18px;
   background: var(--text);
