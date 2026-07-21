@@ -393,8 +393,114 @@ function applyMsgColor(color) {
   if (selected) selected.style.borderColor = "#fff";
 }
 
+let chatThemes = [];
+let activeChatTheme = settings.chatTheme || "default";
+
+function applyChatTheme(themeId) {
+  document.body.classList.remove("theme-midnight", "theme-ocean", "theme-sunset", "theme-forest", "theme-rose", "theme-neon", "theme-paper", "theme-galaxy");
+  if (themeId && themeId !== "default") {
+    document.body.classList.add("theme-" + themeId);
+  }
+  activeChatTheme = themeId;
+  settings.chatTheme = themeId;
+  saveSettings(settings);
+  if (currentUser) {
+    fetch("/api/themes/set", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-user-id": currentUser.id },
+      body: JSON.stringify({ themeId })
+    }).catch(() => {});
+  }
+}
+
+async function fetchAndRenderThemes() {
+  if (!currentUser) return;
+  try {
+    const res = await fetch(`/api/themes?userId=${currentUser.id}&_t=${Date.now()}`);
+    const data = await res.json();
+    chatThemes = data.themes || [];
+    activeChatTheme = data.active || "default";
+    settings.chatTheme = activeChatTheme;
+    saveSettings(settings);
+    applyChatTheme(activeChatTheme);
+    const grid = document.getElementById("themesGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    for (const t of chatThemes) {
+      const card = document.createElement("div");
+      card.className = "theme-card" + (t.id === activeChatTheme ? " active" : "") + (t.owned ? " owned" : "");
+      const preview = getThemePreviewColors(t.id);
+      card.innerHTML = `
+        <div class="theme-card-preview" style="background:${preview.bg}">
+          <div class="mini-bubble user" style="background:${preview.user}"></div>
+          <div class="mini-bubble char" style="background:${preview.char};border:1px solid ${preview.border}"></div>
+        </div>
+        <div class="theme-card-info">
+          <div class="theme-card-name">${t.name}</div>
+          ${t.id === activeChatTheme ? '<div class="theme-card-active">Active</div>' :
+            t.owned ? '<div class="theme-card-buy" style="color:var(--accent)">Equipped</div>' :
+            t.price === 0 ? '<div class="theme-card-buy">Free</div>' :
+            `<div class="theme-card-buy">${t.price} coins</div>`}
+        </div>`;
+      card.addEventListener("click", () => handleThemeClick(t));
+      grid.appendChild(card);
+    }
+  } catch (e) {
+    console.error("Failed to load themes:", e);
+  }
+}
+
+function getThemePreviewColors(id) {
+  const map = {
+    default: { bg: "#0f0e11", user: "#c9952c", char: "#1e1b22", border: "#2a2530" },
+    midnight: { bg: "#12101f", user: "#8b5cf6", char: "#221e35", border: "#2e2850" },
+    ocean: { bg: "#0e1a28", user: "#3b82f6", char: "#1a3050", border: "#254065" },
+    sunset: { bg: "#221210", user: "#f97316", char: "#402018", border: "#503020" },
+    forest: { bg: "#0e2214", user: "#22c55e", char: "#1c4028", border: "#285035" },
+    rose: { bg: "#22101c", user: "#ec4899", char: "#401835", border: "#552045" },
+    neon: { bg: "#10101e", user: "#00ff88", char: "#252545", border: "#303055" },
+    paper: { bg: "#f5f0e8", user: "#b5852a", char: "#e5e0d5", border: "#d5cfc0" },
+    galaxy: { bg: "#100c22", user: "#a855f7", char: "#201845", border: "#302555" }
+  };
+  return map[id] || map.default;
+}
+
+async function handleThemeClick(t) {
+  if (t.id === activeChatTheme) return;
+  if (t.owned || t.price === 0) {
+    applyChatTheme(t.id);
+    fetchAndRenderThemes();
+    return;
+  }
+  const isSub = coinInfo.is_subscriber || (typeof isAdmin !== "undefined" && isAdmin);
+  if (coinInfo.coins < t.price) {
+    const modal = document.getElementById("buyCoinsModal");
+    const title = modal.querySelector(".buy-coins-title");
+    if (title) title.textContent = "Not Enough Coins";
+    modal.showModal();
+    return;
+  }
+  if (!confirm(`Buy "${t.name}" theme for ${t.price} coins?`)) return;
+  try {
+    const res = await fetch("/api/themes/buy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-user-id": currentUser.id },
+      body: JSON.stringify({ themeId: t.id })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || "Failed to buy theme"); return; }
+    coinInfo.coins = data.coins;
+    document.getElementById("coinCount").textContent = coinInfo.coins.toLocaleString();
+    applyChatTheme(t.id);
+    fetchAndRenderThemes();
+  } catch (e) {
+    alert("Failed to buy theme.");
+  }
+}
+
 applyTheme(settings.theme);
 applyMsgColor(settings.msgColor || "#c9952c");
+applyChatTheme(settings.chatTheme || "default");
 
 // ── Favorites ─────────────────────────────────────────────
 async function favoriteCharacter(id) {
@@ -957,6 +1063,19 @@ closeSettings.addEventListener("click", () => {
 
 settingsModal.addEventListener("close", () => {
   saveSettings(settings);
+});
+
+const themesModal = document.getElementById("themesModal");
+document.getElementById("openThemesBtn").addEventListener("click", () => {
+  settingsModal.close();
+  fetchAndRenderThemes();
+  themesModal.showModal();
+});
+document.getElementById("closeThemesBtn").addEventListener("click", () => {
+  themesModal.close();
+});
+themesModal.addEventListener("click", (e) => {
+  if (e.target === themesModal) themesModal.close();
 });
 
 document.querySelectorAll(".color-swatch").forEach(swatch => {
@@ -1990,11 +2109,12 @@ function handleOAuthRedirect() {
           profileData.username = generateRandomUsername();
           saveProfileData();
         }
-        checkAdmin().then(() => checkSubscription().then(() => {
+          checkAdmin().then(() => checkSubscription().then(() => {
           applyAdminUI();
           refreshCharacters();
           showUserMenu();
           checkDailyReward();
+          fetchAndRenderThemes();
         }));
       });
     }
@@ -2245,6 +2365,7 @@ switchAccountBtn.addEventListener("click", () => {
           settings = loadSettings();
           applyTheme(settings.theme);
           applyMsgColor(settings.msgColor || "#c9952c");
+          fetchAndRenderThemes();
           if (!profileData.username) {
             profileData.username = generateRandomUsername();
             saveProfileData();
@@ -2743,6 +2864,7 @@ async function init() {
     loadProfileData();
     showUserMenu();
     checkDailyReward();
+    fetchAndRenderThemes();
   }
   initGoogleSignIn();
 }

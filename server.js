@@ -111,9 +111,9 @@ app.post("/api/admin/restore", requireAdmin, (req, res) => {
         db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
       }
       for (const s of (data.subscriptions || [])) {
-        db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-          .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.created_at);
+        db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, timezone_offset, chat_theme, owned_themes, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+          .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.timezone_offset || 0, s.chat_theme || 'default', s.owned_themes || '["default"]', s.created_at);
       }
       for (const m of (data.memories || [])) {
         db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)")
@@ -292,6 +292,8 @@ try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_likes INTEGER DEFAULT 
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN weekly_likes INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_streak_claimed INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN timezone_offset INTEGER DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN chat_theme TEXT DEFAULT 'default'"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN owned_themes TEXT DEFAULT '[\"default\"]'"); } catch(e) {}
 
 // Seed like_count from likes table for any characters that have 0 but should have more
 db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id) WHERE like_count = 0 AND id IN (SELECT character_id FROM likes)`);
@@ -1564,6 +1566,74 @@ app.post("/api/chat", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Server error contacting the AI provider." });
   }
+});
+
+// ── Chat Themes ──────────────────────────────────────────
+const THEMES = [
+  { id: "default", name: "Default", preview: "#08080a", proPrice: 0, freePrice: 0 },
+  { id: "midnight", name: "Midnight", preview: "#0c0a1a", proPrice: 500, freePrice: 750 },
+  { id: "ocean", name: "Ocean", preview: "#0a1520", proPrice: 500, freePrice: 750 },
+  { id: "sunset", name: "Sunset", preview: "#1a0e08", proPrice: 500, freePrice: 750 },
+  { id: "forest", name: "Forest", preview: "#081a0e", proPrice: 500, freePrice: 750 },
+  { id: "rose", name: "Rose", preview: "#1a0a14", proPrice: 750, freePrice: 1000 },
+  { id: "neon", name: "Neon", preview: "#0a0a14", proPrice: 1000, freePrice: 1500 },
+  { id: "paper", name: "Paper", preview: "#f5f0e8", proPrice: 1000, freePrice: 1500 },
+  { id: "galaxy", name: "Galaxy", preview: "#0a0618", proPrice: 1500, freePrice: 2000 }
+];
+
+app.get("/api/themes", (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) return res.json({ themes: THEMES.map(t => ({ ...t, owned: t.id === "default", price: 0 })), active: "default", coins: 0, is_subscriber: false });
+  const sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
+  const coins = sub ? sub.coins : 0;
+  const isSub = isSubscribed(userId);
+  const isAdmin = userId === ADMIN_USER_ID;
+  const owned = sub ? JSON.parse(sub.owned_themes || '["default"]') : ["default"];
+  const active = sub ? (sub.chat_theme || "default") : "default";
+  const result = THEMES.map(t => {
+    const isOwned = owned.includes(t.id);
+    const price = isAdmin ? 0 : (isSub ? t.proPrice : t.freePrice);
+    return { id: t.id, name: t.name, preview: t.preview, owned: isOwned, price };
+  });
+  res.json({ themes: result, active, coins, is_subscriber: isSub, is_admin: isAdmin });
+});
+
+app.post("/api/themes/buy", (req, res) => {
+  const userId = req.headers["x-user-id"];
+  if (!userId) return res.status(401).json({ error: "Sign in required." });
+  const { themeId } = req.body;
+  if (!themeId) return res.status(400).json({ error: "themeId required." });
+  const theme = THEMES.find(t => t.id === themeId);
+  if (!theme) return res.status(400).json({ error: "Unknown theme." });
+  if (themeId === "default") return res.status(400).json({ error: "Default theme is already free." });
+  const sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
+  const owned = sub ? JSON.parse(sub.owned_themes || '["default"]') : ["default"];
+  if (owned.includes(themeId)) return res.status(400).json({ error: "Already owned." });
+  const isSub = isSubscribed(userId);
+  const isAdmin = userId === ADMIN_USER_ID;
+  const price = isAdmin ? 0 : (isSub ? theme.proPrice : theme.freePrice);
+  if (!isAdmin && price > 0) {
+    const coins = sub ? sub.coins : 0;
+    if (coins < price) return res.status(403).json({ error: `Not enough coins. Need ${price}, have ${coins}.` });
+    db.prepare("UPDATE subscriptions SET coins = coins - ? WHERE user_id = ?").run(price, userId);
+  }
+  owned.push(themeId);
+  db.prepare("UPDATE subscriptions SET owned_themes = ? WHERE user_id = ?").run(JSON.stringify(owned), userId);
+  saveBackup();
+  res.json({ ok: true, owned, coins: (sub && !isAdmin) ? (sub.coins - price) : 0 });
+});
+
+app.post("/api/themes/set", (req, res) => {
+  const userId = req.headers["x-user-id"];
+  if (!userId) return res.status(401).json({ error: "Sign in required." });
+  const { themeId } = req.body;
+  if (!themeId) return res.status(400).json({ error: "themeId required." });
+  const sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
+  const owned = sub ? JSON.parse(sub.owned_themes || '["default"]') : ["default"];
+  if (!owned.includes(themeId)) return res.status(403).json({ error: "Theme not owned." });
+  db.prepare("UPDATE subscriptions SET chat_theme = ? WHERE user_id = ?").run(themeId, userId);
+  saveBackup();
+  res.json({ ok: true, active: themeId });
 });
 
 app.listen(PORT, () => {

@@ -2506,3 +2506,201 @@ body.light .memory-input-row input {
 .profile-char-name { font-size: 15px; font-weight: 600; color: var(--text); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .profile-char-tagline { font-size: 12px; color: var(--text-dim); margin: 3px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .profile-char-stats { font-size: 11px; color: var(--text-dim); margin: 4px 0 0; }
+
+/* ── Chat Themes ─────────────────────────────────────── */
+body.theme-midnight {
+  --bg: #0c0a1a; --bg-deep: #06050f; --panel: #12101f; --panel-hover: #1a1728;
+  --border: #221e35; --text: #e8e0f0; --text-dim: #6b60a0;
+  --accent: #8b5cf6; --accent-bright: #a78bfa; --accent-dim: #5b3d99;
+  --user-msg: #8b5cf6; --card-bg: #12101f;
+}
+body.theme-midnight .banner { background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.15) 0%, transparent 60%), var(--bg); }
+body.theme-midnight .wordmark { text-shadow: 0 0 60px rgba(139,92,246,0.5), 0 0 120px rgba(139,92,246,0.2), 0 2px 4px rgba(0,0,0,0.8); }
+body.theme-midnight .msg.user { box-shadow: 0 4px 20px rgba(139,92,246,0.3); }
+
+body.theme-ocean {
+  --bg: #0a1520; --bg-deep: #050b12; --panel: #0e1a28; --panel-hover: #142438;
+  --border: #1a3050; --text: #e0eaf5; --text-dim: #5a80a0;
+  --accent: #3b82f6; --accent-bright: #60a5fa; --accent-dim: #1e40af;
+  --user-msg: #3b82f6; --card-bg: #0e1a28;
+}
+body.theme-ocean .banner { background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 60%), var(--bg); }
+body.theme-ocean .wordmark { text-shadow: 0 0 60px rgba(59,130,246,0.5), 0 0 120px rgba(59,130,246,0.2), 0 2px 4px rgba(0,0,0,0.8); }
+body.theme-ocean .msg.user { box-shadow: 0 4px 20px rgba(59,130,246,0.3); }
+
+body.theme-sunset {
+  --bg: #1a0e08; --bg-deep: #0f0804; --panel: #221210; --panel-hover: #2c1a15;
+  --border: #402018; --text: #f5e0d0; --text-dim: #a06848;
+  --accent: #f97316; --accent-bright: #fb923c; --accent-dim: #c2410c;
+  --user-msg: #f97316; --card-bg: #221210;
+}
+body.theme-sunset .banner { background: radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.15) 0%, transparent 60%), var(--bg); }
+body.theme-sunset .wordmark { text-shadow: 0 0 60px rgba(249,115,22,0.5), 0 0 120px rgba(249,115,22,0.2), 0 2px 4px rgba(0,0,0,0.8); }
+body.theme-sunset .msg.user { box-shadow: 0 4px 20px rgba(249,115,22,0.3); }
+
+body.theme-forest {
+  --bg: #081a0e; --bg-deep: #040f08; --panel: #0e2214; --panel-hover: #142c1c;
+  --border: #1c4028; --text: #e0f5e8; --text-dim: #48a060;
+  --accent: #22c55e; --accent-bright: #4ade80; --accent-dim: #15803d;
+  --user-msg: #22c55e; --card-bg: #0e2214;
+}
+body.theme-forest .banner { background: radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.15) 0%, transparent 60%), var(--bg); }
+body.theme-forest .wordmark { text-shadow: 0 0 60px rgba(34,197,94,0.5), 0 0 120px rgba(34,197,94,0.2), 0 2px 4px rgba(0,0,0,0.8); }
+body.theme-forest .msg.user { box-shadow: 0 4px 20px rgba(34,197,94,0.3); }
+
+body.theme-rose {
+  --bg: #1a0a14; --bg-deep: #0f060c; --panel: #22101c; --panel-hover: #2c1826;
+  --border: #401835; --text: #f5e0f0; --text-dim: #a04880;
+  --accent: #ec4899; --accent-bright: #f472b6; --accent-dim: #be185d;
+  --user-msg: #ec4899; --card-bg: #22101c;
+}
+body.theme-rose .banner { background: radial-gradient(ellipse at 50% 0%, rgba(236,72,153,0.15) 0%, transparent 60%), var(--bg); }
+body.theme-rose .wordmark { text-shadow: 0 0 60px rgba(236,72,153,0.5), 0 0 120px rgba(236,72,153,0.2), 0 2px 4px rgba(0,0,0,0.8); }
+body.theme-rose .msg.user { box-shadow: 0 4px 20px rgba(236,72,153,0.3); }
+
+body.theme-neon {
+  --bg: #0a0a14; --bg-deep: #05050a; --panel: #10101e; --panel-hover: #181830;
+  --border: #252545; --text: #e8e8ff; --text-dim: #6060a0;
+  --accent: #00ff88; --accent-bright: #33ffaa; --accent-dim: #009955;
+  --user-msg: #00ff88; --card-bg: #10101e;
+}
+body.theme-neon .banner { background: radial-gradient(ellipse at 50% 0%, rgba(0,255,136,0.12) 0%, transparent 60%), var(--bg); }
+body.theme-neon .wordmark { text-shadow: 0 0 60px rgba(0,255,136,0.5), 0 0 120px rgba(0,255,136,0.2), 0 2px 4px rgba(0,0,0,0.8); }
+body.theme-neon .msg.user { box-shadow: 0 4px 20px rgba(0,255,136,0.3); }
+body.theme-neon .nav-btn.active { background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.2); }
+body.theme-neon .msg.character { border-color: #252545; }
+body.theme-neon .claim-btn { background: linear-gradient(135deg, #00ff88, #00cc66); }
+
+body.theme-paper {
+  --bg: #f5f0e8; --bg-deep: #ebe5da; --panel: #ffffff; --panel-hover: #f5f0ea;
+  --border: #d5cfc0; --text: #2a2520; --text-dim: #8a8575;
+  --accent: #b5852a; --accent-bright: #c9952c; --accent-dim: #8a6520;
+  --user-msg: #b5852a; --card-bg: #ffffff;
+}
+body.theme-paper .banner { background: radial-gradient(ellipse at 50% 0%, rgba(181,133,42,0.1) 0%, transparent 60%), var(--bg); }
+body.theme-paper .wordmark { text-shadow: 0 0 60px rgba(181,133,42,0.3), 0 2px 4px rgba(0,0,0,0.1); }
+body.theme-paper .msg.user { box-shadow: 0 4px 20px rgba(181,133,42,0.2); color: #fff; }
+body.theme-paper .msg.user .emph { color: #ffe0ff; }
+body.theme-paper .msg.character { background: #f8f5f0; border-color: #e5e0d5; }
+body.theme-paper .msg.character .emph { color: #7c3aed; }
+body.theme-paper .nav-btn.active { background: rgba(181,133,42,0.1); border-color: rgba(181,133,42,0.25); }
+body.theme-paper .composer { background: var(--panel); }
+body.theme-paper .claim-btn { background: linear-gradient(135deg, #b5852a, #8a6520); }
+body.theme-paper dialog { box-shadow: 0 25px 80px rgba(0,0,0,0.3); }
+body.theme-paper .msg.character .emph { color: #6d28d9; }
+
+body.theme-galaxy {
+  --bg: #0a0618; --bg-deep: #050310; --panel: #100c22; --panel-hover: #181430;
+  --border: #201845; --text: #e8e0ff; --text-dim: #7060b0;
+  --accent: #a855f7; --accent-bright: #c084fc; --accent-dim: #7c3aed;
+  --user-msg: #a855f7; --card-bg: #100c22;
+}
+body.theme-galaxy .banner { background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.15) 0%, transparent 60%), var(--bg); }
+body.theme-galaxy .wordmark { text-shadow: 0 0 60px rgba(168,85,247,0.5), 0 0 120px rgba(168,85,247,0.2), 0 2px 4px rgba(0,0,0,0.8); }
+body.theme-galaxy .msg.user { box-shadow: 0 4px 20px rgba(168,85,247,0.3); }
+
+body.theme-midnight .msg.character { border-color: #221e35; }
+body.theme-ocean .msg.character { border-color: #1a3050; }
+body.theme-sunset .msg.character { border-color: #402018; }
+body.theme-forest .msg.character { border-color: #1c4028; }
+body.theme-rose .msg.character { border-color: #401835; }
+body.theme-neon .msg.character { border-color: #252545; }
+body.theme-galaxy .msg.character { border-color: #201845; }
+
+body.theme-midnight .msg.character .emph { color: #c4b5fd; }
+body.theme-ocean .msg.character .emph { color: #93c5fd; }
+body.theme-sunset .msg.character .emph { color: #fdba74; }
+body.theme-forest .msg.character .emph { color: #86efac; }
+body.theme-rose .msg.character .emph { color: #f9a8d4; }
+body.theme-neon .msg.character .emph { color: #6ee7b7; }
+body.theme-galaxy .msg.character .emph { color: #d8b4fe; }
+
+body.theme-midnight .nav-btn.active, body.theme-ocean .nav-btn.active, body.theme-sunset .nav-btn.active,
+body.theme-forest .nav-btn.active, body.theme-rose .nav-btn.active, body.theme-galaxy .nav-btn.active {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+body.theme-midnight .claim-btn, body.theme-ocean .claim-btn, body.theme-sunset .claim-btn,
+body.theme-forest .claim-btn, body.theme-rose .claim-btn, body.theme-galaxy .claim-btn {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+}
+
+body.theme-midnight .daily-reward-title, body.theme-ocean .daily-reward-title, body.theme-sunset .daily-reward-title,
+body.theme-forest .daily-reward-title, body.theme-rose .daily-reward-title, body.theme-galaxy .daily-reward-title {
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+body.theme-midnight .buy-coins-title, body.theme-ocean .buy-coins-title, body.theme-sunset .buy-coins-title,
+body.theme-forest .buy-coins-title, body.theme-rose .buy-coins-title, body.theme-galaxy .buy-coins-title {
+  background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+body.theme-midnight .pkg-badge, body.theme-ocean .pkg-badge, body.theme-sunset .pkg-badge,
+body.theme-forest .pkg-badge, body.theme-rose .pkg-badge, body.theme-galaxy .pkg-badge {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+}
+
+/* Theme preview cards */
+.themes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+.theme-card {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--panel);
+}
+.theme-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.theme-card.active { border-color: var(--accent-bright); box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 30%, transparent); }
+.theme-card.owned { border-color: var(--accent-dim); }
+.theme-card-preview {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 12px;
+}
+.theme-card-preview .mini-bubble {
+  height: 16px;
+  border-radius: 6px;
+}
+.theme-card-preview .mini-bubble.user { width: 32px; }
+.theme-card-preview .mini-bubble.char { width: 40px; }
+.theme-card-info {
+  padding: 8px 10px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+.theme-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.theme-card-price {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.theme-card-active {
+  font-size: 10px;
+  color: var(--accent-bright);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.theme-card-buy {
+  font-size: 11px;
+  color: var(--text-dim);
+}

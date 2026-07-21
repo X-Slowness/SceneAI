@@ -22,7 +22,7 @@
 <meta name="twitter:description" content="Create, customize, and chat with AI characters. Build your own cast and start immersive conversations.">
 
 <link rel="icon" type="image/png" href="logo.png">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
 </head>
 <body>
@@ -410,6 +410,12 @@
           <button type="button" class="color-swatch" data-color="#0099aa" style="width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:#0099aa;" title="Cyan"></button>
         </div>
       </div>
+      <div class="settings-row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <button type="button" id="openThemesBtn" style="background:none;border:1px solid var(--accent-dim);color:var(--accent);padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;width:100%;text-align:left;display:flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="15.5" r="2.5"/><circle cx="8.5" cy="15.5" r="2.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/></svg>
+          Chat Themes
+        </button>
+      </div>
       <div class="settings-row" id="longerMsgRow" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
         <label>Longer Messages</label>
         <button type="button" id="longerMsgToggle" class="theme-toggle">
@@ -430,6 +436,18 @@
         <button type="button" id="closeSettings">Done</button>
       </div>
     </form>
+  </dialog>
+
+  <!-- Themes dialog -->
+  <dialog id="themesModal">
+    <div style="max-width:480px;">
+      <h3 style="margin:0 0 4px;">Chat Themes</h3>
+      <p id="themesSubtitle" style="font-size:13px;color:var(--text-dim);margin:0 0 16px;">Customize your chat experience</p>
+      <div id="themesGrid" class="themes-grid"></div>
+      <div class="modal-actions" style="margin-top:16px;">
+        <button type="button" id="closeThemesBtn">Done</button>
+      </div>
+    </div>
   </dialog>
 
   <!-- Clear history warning dialog -->
@@ -714,6 +732,6 @@
       <button id="confirmOk" class="danger" style="background:none;border:1px solid #c0392b;color:#c0392b;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:14px;">Confirm</button>
     </div>
   </dialog>
-  <script src="script.js?v=4"></script>
+  <script src="script.js?v=5"></script>
 </body>
 </html>
