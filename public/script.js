@@ -1219,13 +1219,14 @@ async function renderRecentGallery() {
     recentChatsGalleryEl.innerHTML = `<p class="card-desc">Sign in to see your chats.</p>`;
     return;
   }
+  const allMsgs = await Promise.all(characters.map(c => loadMessages(c.id)));
   const recent = [];
-  for (const c of characters) {
-    const msgs = await loadMessages(c.id);
+  characters.forEach((c, i) => {
+    const msgs = allMsgs[i];
     if (msgs.length > 0) {
       recent.push({ ...c, _lastMessage: msgs[msgs.length - 1].content, _msgCount: msgs.length });
     }
-  }
+  });
   recent.sort((a, b) => (b._lastMessage ? 1 : 0) - (a._lastMessage ? 1 : 0));
   recentChatsGalleryEl.innerHTML = "";
   if (recent.length === 0) {
