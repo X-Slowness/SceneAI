@@ -2115,6 +2115,7 @@ async function handleCredentialResponse(response) {
   applyAdminUI();
   await refreshCharacters();
   showUserMenu();
+  location.reload();
 }
 
 function initGoogleSignIn() {
@@ -2246,6 +2247,7 @@ switchAccountBtn.addEventListener("click", () => {
           applyAdminUI();
           await refreshCharacters();
           showUserMenu();
+          location.reload();
         }
       } catch (err) {
         console.error("Failed to get user info:", err);
@@ -2258,12 +2260,7 @@ switchAccountBtn.addEventListener("click", () => {
 logoutBtn.addEventListener("click", () => {
   profileModal.close();
   localStorage.removeItem("sceneai_user");
-  currentUser = null;
-  profileData = {};
-  isAdmin = false;
-  google.accounts.id.disableAutoSelect();
-  showSignIn();
-  applyAdminUI();
+  location.reload();
 });
 
 deleteAccountBtn.addEventListener("click", async () => {
