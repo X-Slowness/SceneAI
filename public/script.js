@@ -2202,7 +2202,8 @@ profilePicInput.addEventListener("change", () => {
   img.src = URL.createObjectURL(file);
 });
 
-removeProfilePic.addEventListener("click", () => {
+removeProfilePic.addEventListener("click", async () => {
+  if (!(await showConfirm("Remove your profile picture?"))) return;
   profileData.picture = null;
   saveProfileData();
   updateProfileDisplay();
