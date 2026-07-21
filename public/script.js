@@ -450,8 +450,8 @@ function renderThemeGrid() {
       </div>
       <div class="theme-card-info">
         <div class="theme-card-name">${t.name}</div>
-        ${t.id === activeChatTheme ? '<div class="theme-card-active">Active</div>' :
-          t.owned ? '<div class="theme-card-buy" style="color:var(--accent)">Equipped</div>' :
+        ${t.id === activeChatTheme ? '<div class="theme-card-buy" style="color:var(--accent-bright)">Equipped</div>' :
+          t.owned ? '<div class="theme-card-buy" style="color:var(--accent)">Owned</div>' :
           t.price === 0 ? '<div class="theme-card-buy">Free</div>' :
           `<div class="theme-card-buy">${t.price} coins</div>`}
       </div>`;
@@ -470,12 +470,12 @@ function updateThemeGridUI() {
     const info = card.querySelector(".theme-card-info > :last-child");
     if (info) {
       if (theme.id === activeChatTheme) {
-        info.className = "theme-card-active";
-        info.textContent = "Active";
-        info.style.color = "";
+        info.className = "theme-card-buy";
+        info.style.color = "var(--accent-bright)";
+        info.textContent = "Equipped";
       } else if (theme.owned) {
         info.className = "theme-card-buy";
-        info.textContent = "Equipped";
+        info.textContent = "Owned";
         info.style.color = "var(--accent)";
       }
     }
