@@ -705,7 +705,7 @@ aiGenGenerateBtn.addEventListener("click", async () => {
     aiGenGeneratedPhoto = null;
     const imgPreview = document.getElementById("aiGenPhotoPreview");
     imgPreview.style.display = "none";
-    const imgPrompt = `${char.name} anime character portrait, detailed, high quality`;
+    const imgPrompt = `${char.name} from anime, ${char.persona.slice(0, 300)} anime style, character portrait, detailed face, high quality`;
     try {
       const imgRes = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=512&height=512&nologo=true`);
       if (imgRes.ok) {
