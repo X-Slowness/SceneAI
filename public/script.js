@@ -667,6 +667,7 @@ const aiGenLoading = document.getElementById("aiGenLoading");
 const aiGenResult = document.getElementById("aiGenResult");
 const aiGenGenerateBtn = document.getElementById("aiGenGenerateBtn");
 const aiGenUseBtn = document.getElementById("aiGenUseBtn");
+let aiGenGeneratedPhoto = null;
 
 document.getElementById("aiGenBtn").addEventListener("click", () => {
   aiGenConcept.value = "";
@@ -701,6 +702,23 @@ aiGenGenerateBtn.addEventListener("click", async () => {
     aiGenResult.style.display = "";
     aiGenGenerateBtn.style.display = "none";
     aiGenUseBtn.style.display = "";
+    aiGenGeneratedPhoto = null;
+    const imgPreview = document.getElementById("aiGenPhotoPreview");
+    imgPreview.style.display = "none";
+    const imgPrompt = `${char.name} anime character portrait, detailed, high quality`;
+    try {
+      const imgRes = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=512&height=512&nologo=true`);
+      if (imgRes.ok) {
+        const blob = await imgRes.blob();
+        const reader = new FileReader();
+        reader.onload = () => {
+          aiGenGeneratedPhoto = reader.result;
+          imgPreview.src = reader.result;
+          imgPreview.style.display = "";
+        };
+        reader.readAsDataURL(blob);
+      }
+    } catch(imgErr) { console.warn("Image generation failed:", imgErr); }
   } catch(e) {
     aiGenLoading.innerHTML = `<p style="color:#c0392b;">Failed to generate. ${e.message}</p>`;
   } finally {
@@ -727,6 +745,17 @@ aiGenUseBtn.addEventListener("click", () => {
     chip.classList.toggle("selected", isSelected);
   });
   selectedTags = tags;
+  if (aiGenGeneratedPhoto) {
+    pendingPhoto = aiGenGeneratedPhoto;
+    pendingPhotoPos = 50;
+    pendingPhotoZoom = 1.0;
+    photoThumb.src = pendingPhoto;
+    photoThumb.style.objectPosition = "50% 50%";
+    photoThumb.style.transform = "";
+    photoThumb.style.objectFit = "";
+    photoBtnLabel.textContent = "Change photo";
+    aiGenGeneratedPhoto = null;
+  }
 });
 
 photoInput.addEventListener("change", () => {
