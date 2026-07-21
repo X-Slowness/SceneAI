@@ -2361,8 +2361,9 @@ async function openProfile(userId) {
     const res = await fetch(`/api/profile/${userId}/public`);
     if (!res.ok) { document.getElementById("publicProfileUsername").textContent = "Unknown user"; return; }
     const p = await res.json();
-    document.getElementById("publicProfilePicture").src = p.picture || "";
-    document.getElementById("publicProfilePicture").style.display = p.picture ? "" : "none";
+    const pic = p.picture || (userId === currentUser?.id ? currentUser?.picture : "") || "";
+    document.getElementById("publicProfilePicture").src = pic;
+    document.getElementById("publicProfilePicture").style.display = pic ? "" : "none";
     document.getElementById("publicProfileUsername").textContent = p.username || "Anonymous";
     const badge = document.getElementById("publicProfileBadge");
     badge.textContent = p.badge;
