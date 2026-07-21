@@ -1167,7 +1167,7 @@ app.post("/api/coins/checkout", async (req, res) => {
 app.post("/api/subscription/toggle-longer", (req, res) => {
   const userId = req.headers["x-user-id"];
   if (!userId) return res.status(401).json({ error: "Sign in required." });
-  if (!isSubscribed(userId)) return res.status(403).json({ error: "Subscription required." });
+  if (!isSubscribed(userId) && userId !== ADMIN_USER_ID) return res.status(403).json({ error: "Subscription required." });
   const sub = db.prepare("SELECT longer_messages FROM subscriptions WHERE user_id = ?").get(userId);
   const newVal = sub?.longer_messages ? 0 : 1;
   db.prepare("UPDATE subscriptions SET longer_messages = ? WHERE user_id = ?").run(newVal, userId);
