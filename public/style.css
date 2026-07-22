@@ -2686,6 +2686,33 @@ body.theme-galaxy .msg.user {
   background-size: 200% 200%;
   animation: galaxyMsgShift 8s ease-in-out infinite;
 }
+body.theme-galaxy .messages {
+  position: relative;
+}
+body.theme-galaxy .messages::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 8% 15%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 22% 45%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1.5px 1.5px at 35% 8%, rgba(192,132,252,0.8), transparent),
+    radial-gradient(1px 1px at 55% 65%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 72% 25%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 88% 50%, rgba(168,85,247,0.7), transparent),
+    radial-gradient(1px 1px at 15% 78%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 45% 92%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1.5px 1.5px at 65% 38%, rgba(192,132,252,0.6), transparent),
+    radial-gradient(1px 1px at 92% 72%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 5% 55%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1.5px 1.5px at 78% 88%, rgba(168,85,247,0.5), transparent);
+  animation: galaxyTwinkle 5s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+body.theme-galaxy .messages > * {
+  position: relative;
+  z-index: 1;
+}
 @keyframes galaxyMsgShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
