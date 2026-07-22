@@ -1755,7 +1755,6 @@ async function openChat(id) {
   publicProfileView.hidden = true;
   chatView.hidden = false;
   document.querySelector(".app").classList.add("chat-active");
-  if (activeChatTheme === "galaxy") injectGalaxyStars();
   currentMessages = await loadMessages(id);
   renderMessages();
   input.value = "";
@@ -2042,6 +2041,7 @@ function renderMessages() {
     messagesEl.appendChild(wrap);
   });
   messagesEl.scrollTop = messagesEl.scrollHeight;
+  if (activeChatTheme === "galaxy") injectGalaxyStars();
 }
 
 function startEditMessage(idx, wrap) {
