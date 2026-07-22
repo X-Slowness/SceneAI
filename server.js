@@ -1630,7 +1630,11 @@ app.post("/api/themes/set", (req, res) => {
   if (!themeId) return res.status(400).json({ error: "themeId required." });
   const sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
   const owned = sub ? JSON.parse(sub.owned_themes || '["default"]') : ["default"];
-  if (!owned.includes(themeId)) return res.status(403).json({ error: "Theme not owned." });
+  if (!owned.includes(themeId) && userId !== ADMIN_USER_ID) return res.status(403).json({ error: "Theme not owned." });
+  if (userId === ADMIN_USER_ID && !owned.includes(themeId)) {
+    owned.push(themeId);
+    db.prepare("UPDATE subscriptions SET owned_themes = ? WHERE user_id = ?").run(JSON.stringify(owned), userId);
+  }
   db.prepare("UPDATE subscriptions SET chat_theme = ? WHERE user_id = ?").run(themeId, userId);
   saveBackup();
   res.json({ ok: true, active: themeId });
