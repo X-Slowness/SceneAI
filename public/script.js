@@ -387,7 +387,7 @@ function applyTheme(theme) {
 }
 
 function applyMsgColor(color) {
-  document.documentElement.style.setProperty("--user-msg", color);
+  document.body.style.setProperty("--user-msg", color);
   const selected = document.querySelector(`.color-swatch[data-color="${color}"]`);
   document.querySelectorAll(".color-swatch").forEach(s => s.style.borderColor = "transparent");
   if (selected) selected.style.borderColor = "#fff";
@@ -397,7 +397,7 @@ let chatThemes = [];
 let activeChatTheme = settings.chatTheme || "default";
 
 function applyChatTheme(themeId) {
-  document.documentElement.style.removeProperty("--user-msg");
+  document.body.style.removeProperty("--user-msg");
   document.body.classList.remove("theme-midnight", "theme-ocean", "theme-sunset", "theme-forest", "theme-rose", "theme-neon", "theme-paper", "theme-galaxy");
   if (themeId && themeId !== "default") {
     document.body.classList.add("theme-" + themeId);
