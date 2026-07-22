@@ -401,8 +401,9 @@ function removeGalaxyStars() {
   if (old) old.remove();
 }
 function injectGalaxyStars() {
-  const messages = document.querySelector(".messages");
-  if (!messages) return;
+  removeGalaxyStars();
+  const chatView = document.getElementById("chatView");
+  if (!chatView || chatView.hidden) return;
   const container = document.createElement("div");
   container.className = "galaxy-stars";
   const stars = [
@@ -433,8 +434,7 @@ function injectGalaxyStars() {
     el.style.cssText = `left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;animation:galaxyBlink${s.d} ${3 + Math.random() * 3}s ease-in-out infinite;animation-delay:${Math.random() * 2}s;`;
     container.appendChild(el);
   });
-  messages.style.position = "relative";
-  messages.prepend(container);
+  chatView.prepend(container);
 }
 function applyChatTheme(themeId) {
   document.body.style.removeProperty("--user-msg");
@@ -442,7 +442,6 @@ function applyChatTheme(themeId) {
   removeGalaxyStars();
   if (themeId && themeId !== "default") {
     document.body.classList.add("theme-" + themeId);
-    if (themeId === "galaxy") injectGalaxyStars();
   }
   activeChatTheme = themeId;
   settings.chatTheme = themeId;
@@ -1755,6 +1754,7 @@ async function openChat(id) {
   publicProfileView.hidden = true;
   chatView.hidden = false;
   document.querySelector(".app").classList.add("chat-active");
+  if (activeChatTheme === "galaxy") injectGalaxyStars();
   currentMessages = await loadMessages(id);
   renderMessages();
   input.value = "";
@@ -2041,7 +2041,6 @@ function renderMessages() {
     messagesEl.appendChild(wrap);
   });
   messagesEl.scrollTop = messagesEl.scrollHeight;
-  if (activeChatTheme === "galaxy") injectGalaxyStars();
 }
 
 function startEditMessage(idx, wrap) {

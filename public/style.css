@@ -2688,11 +2688,17 @@ body.theme-galaxy .msg.user {
   background-size: 200% 200%;
   animation: galaxyMsgShift 8s ease-in-out infinite;
 }
-body.theme-galaxy .messages {
+body.theme-galaxy .chat-view:not([hidden]) {
   position: relative;
 }
 body.theme-galaxy .galaxy-stars {
   position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+}
+body.theme-galaxy .chat-view > .chat-header,
+body.theme-galaxy .chat-view > .messages,
+body.theme-galaxy .chat-view > .composer {
+  position: relative;
+  z-index: 1;
 }
 body.theme-galaxy .galaxy-star {
   position: absolute;
