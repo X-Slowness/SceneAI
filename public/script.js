@@ -1919,7 +1919,7 @@ function formatMsg(text) {
   return text.replace(/\*\*\*([\s\S]+?)\*\*\*/g, (match, inner) => {
     const withQuotes = inner.replace(/"([^"<\n]*)"/g, '<span class="plain">$1</span>');
     return '<span class="bold">' + withQuotes + '</span>';
-  }).replace(/\*([\s\S]+?)\*/g, (match, inner) => {
+  }).replace(/\*\s*([^\s*][\s\S]+?[^\s*])\s*\*/g, (match, inner) => {
     const withPlain = inner.replace(/"([^"<\n]*)"/g, '<span class="plain">$1</span>');
     return '<span class="emph">' + withPlain + '</span>';
   });
