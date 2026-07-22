@@ -551,13 +551,10 @@ async function syncThemeFromServer() {
     }
   } catch(e) {}
 }
-// Show page after first server theme fetch (or immediately if not logged in)
-(async () => {
-  if (currentUser) {
-    await syncThemeFromServer();
-  }
-  document.body.style.opacity = "1";
-})();
+// On page load: show immediately with localStorage theme, then silently sync from server
+if (currentUser) {
+  syncThemeFromServer();
+}
 document.addEventListener("visibilitychange", () => { if (!document.hidden) syncThemeFromServer(); });
 window.addEventListener("focus", syncThemeFromServer);
 setInterval(syncThemeFromServer, 30000);
