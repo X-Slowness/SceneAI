@@ -2691,9 +2691,12 @@ body.theme-galaxy .msg.user {
 body.theme-galaxy .messages {
   position: relative;
 }
+body.theme-galaxy .messages {
+  position: relative;
+}
 body.theme-galaxy .messages::before {
   content: '';
-  position: fixed; inset: 0;
+  position: absolute; inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='white'/%3E%3C/svg%3E");
   background-size: 10px 10px;
   background-repeat: no-repeat;
@@ -2706,7 +2709,7 @@ body.theme-galaxy .messages::before {
 }
 body.theme-galaxy .messages::after {
   content: '';
-  position: fixed; inset: 0;
+  position: absolute; inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(192,132,252,0.9)'/%3E%3C/svg%3E");
   background-size: 10px 10px;
   background-repeat: no-repeat;
