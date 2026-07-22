@@ -2694,30 +2694,39 @@ body.theme-galaxy .messages {
 body.theme-galaxy .messages::before {
   content: '';
   position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='white'/%3E%3C/svg%3E");
+  background-size: 10px 10px;
+  background-repeat: no-repeat;
+  background-position:
+    3% 8%, 19% 72%, 34% 55%, 50% 28%, 64% 5%,
+    78% 82%, 92% 68%, 23% 30%, 53% 12%, 82% 15%;
+  animation: galaxyBlinkA 4s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
 }
 body.theme-galaxy .messages::after {
   content: '';
   position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='white'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(192,132,252,0.9)'/%3E%3C/svg%3E");
   background-size: 10px 10px;
   background-repeat: no-repeat;
   background-position:
-    3% 8%, 11% 42%, 19% 72%, 27% 18%, 34% 55%,
-    42% 88%, 50% 28%, 57% 62%, 64% 5%, 71% 48%,
-    78% 82%, 85% 35%, 92% 68%, 6% 92%, 23% 30%,
-    38% 78%, 53% 12%, 67% 58%, 82% 15%, 96% 52%;
-  opacity: 0.7;
-  animation: galaxyChatStars 3s ease-in-out infinite alternate;
+    11% 42%, 27% 18%, 42% 88%, 57% 62%, 71% 48%,
+    85% 35%, 6% 92%, 38% 78%, 67% 58%, 96% 52%;
+  animation: galaxyBlinkB 4s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
 }
-@keyframes galaxyChatStars {
+@keyframes galaxyBlinkA {
+  0% { opacity: 1; }
+  30% { opacity: 0.3; }
+  60% { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes galaxyBlinkB {
   0% { opacity: 0.3; }
-  25% { opacity: 0.9; }
-  50% { opacity: 0.4; }
-  75% { opacity: 1; }
+  30% { opacity: 1; }
+  60% { opacity: 0.3; }
   100% { opacity: 0.3; }
 }
 body.theme-galaxy .messages > * {
