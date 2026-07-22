@@ -2641,9 +2641,56 @@ body.theme-galaxy {
   --accent: #a855f7; --accent-bright: #c084fc; --accent-dim: #7c3aed;
   --user-msg: #a855f7; --card-bg: #100c22;
 }
-body.theme-galaxy .banner { background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.15) 0%, transparent 60%), var(--bg); }
-body.theme-galaxy .wordmark { text-shadow: 0 0 60px rgba(168,85,247,0.5), 0 0 120px rgba(168,85,247,0.2), 0 2px 4px rgba(0,0,0,0.8); }
-body.theme-galaxy .msg.user { box-shadow: 0 4px 20px rgba(168,85,247,0.3); }
+body.theme-galaxy .banner {
+  background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.15) 0%, transparent 60%), var(--bg);
+  position: relative; overflow: hidden;
+}
+body.theme-galaxy .banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1.5px 1.5px at 50% 10%, rgba(192,132,252,0.9), transparent),
+    radial-gradient(1px 1px at 70% 40%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 85% 70%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1.5px 1.5px at 20% 80%, rgba(168,85,247,0.8), transparent),
+    radial-gradient(1px 1px at 60% 90%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 90% 15%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 40% 35%, rgba(192,132,252,0.7), transparent),
+    radial-gradient(1px 1px at 75% 55%, rgba(255,255,255,0.5), transparent);
+  animation: galaxyTwinkle 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes galaxyTwinkle {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+body.theme-galaxy .wordmark {
+  text-shadow: 0 0 60px rgba(168,85,247,0.5), 0 0 120px rgba(168,85,247,0.2), 0 2px 4px rgba(0,0,0,0.8);
+  background: linear-gradient(135deg, #c084fc, #a855f7, #7c3aed, #c084fc);
+  background-size: 300% 300%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: galaxyShimmer 6s ease-in-out infinite;
+}
+@keyframes galaxyShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+body.theme-galaxy .msg.user {
+  box-shadow: 0 4px 20px rgba(168,85,247,0.3);
+  background: linear-gradient(135deg, #7c3aed, #a855f7, #c084fc);
+  background-size: 200% 200%;
+  animation: galaxyMsgShift 8s ease-in-out infinite;
+}
+@keyframes galaxyMsgShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 
 body.theme-midnight .msg.character { border-color: #221e35; }
 body.theme-ocean .msg.character { border-color: #1a3050; }
