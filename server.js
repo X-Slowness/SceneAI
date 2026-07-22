@@ -131,6 +131,9 @@ app.post("/api/admin/restore", requireAdmin, (req, res) => {
         db.prepare("INSERT OR REPLACE INTO user_profiles (user_id, username, picture, created_at) VALUES (?, ?, ?, ?)")
           .run(p.user_id, p.username, p.picture, p.created_at);
       }
+      for (const q of (data.claimed_quests || [])) {
+        db.prepare("INSERT OR IGNORE INTO claimed_quests (user_id, quest_id, claimed_at) VALUES (?, ?, ?)").run(q.user_id, q.quest_id, q.claimed_at);
+      }
     });
     restore();
     // Remove characters that have no messages, no likes, and were not in the backup
@@ -525,8 +528,8 @@ if (needsRestore) {
             db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
           }
           for (const s of (data.subscriptions || [])) {
-            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-              .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.created_at);
+            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, timezone_offset, chat_theme, owned_themes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+              .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.timezone_offset || 0, s.chat_theme || 'default', s.owned_themes || '["default"]', s.created_at);
           }
           for (const m of (data.memories || [])) {
             db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)").run(m.id, m.character_id, m.user_id, m.content, m.created_at);
@@ -539,6 +542,9 @@ if (needsRestore) {
           }
           for (const p of (data.user_profiles || [])) {
             db.prepare("INSERT OR REPLACE INTO user_profiles (user_id, username, picture, created_at) VALUES (?, ?, ?, ?)").run(p.user_id, p.username, p.picture, p.created_at);
+          }
+          for (const q of (data.claimed_quests || [])) {
+            db.prepare("INSERT OR IGNORE INTO claimed_quests (user_id, quest_id, claimed_at) VALUES (?, ?, ?)").run(q.user_id, q.quest_id, q.claimed_at);
           }
         });
         restore();
@@ -1674,6 +1680,7 @@ function saveBackup() {
       group_chats: db.prepare("SELECT * FROM group_chats").all(),
       group_chat_members: db.prepare("SELECT * FROM group_chat_members").all(),
       user_profiles: db.prepare("SELECT * FROM user_profiles").all(),
+      claimed_quests: db.prepare("SELECT * FROM claimed_quests").all(),
       saved_at: Date.now()
     };
     fs.writeFileSync(BACKUP_PATH, JSON.stringify(data));
