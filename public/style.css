@@ -2691,34 +2691,21 @@ body.theme-galaxy .msg.user {
 body.theme-galaxy .messages {
   position: relative;
 }
-body.theme-galaxy .messages {
-  position: relative;
+body.theme-galaxy .galaxy-stars {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
 }
-body.theme-galaxy .messages::before {
-  content: '';
-  position: absolute; inset: 0;
+body.theme-galaxy .galaxy-star {
+  position: absolute;
+  width: 10px; height: 10px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='white'/%3E%3C/svg%3E");
-  background-size: 10px 10px;
+  background-size: contain;
   background-repeat: no-repeat;
-  background-position:
-    3% 8%, 19% 72%, 34% 55%, 50% 28%, 64% 5%,
-    78% 82%, 92% 68%, 23% 30%, 53% 12%, 82% 15%;
-  animation: galaxyBlinkA 4s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
 }
-body.theme-galaxy .messages::after {
-  content: '';
-  position: absolute; inset: 0;
+body.theme-galaxy .galaxy-star.purple {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(192,132,252,0.9)'/%3E%3C/svg%3E");
-  background-size: 10px 10px;
-  background-repeat: no-repeat;
-  background-position:
-    11% 42%, 27% 18%, 42% 88%, 57% 62%, 71% 48%,
-    85% 35%, 6% 92%, 38% 78%, 67% 58%, 96% 52%;
-  animation: galaxyBlinkB 4s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
+}
+body.theme-galaxy .galaxy-star.bright {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(168,85,247,1)'/%3E%3C/svg%3E");
 }
 @keyframes galaxyBlinkA {
   0% { opacity: 1; }
@@ -2731,10 +2718,6 @@ body.theme-galaxy .messages::after {
   30% { opacity: 1; }
   60% { opacity: 0.3; }
   100% { opacity: 0.3; }
-}
-body.theme-galaxy .messages > * {
-  position: relative;
-  z-index: 1;
 }
 @keyframes galaxyMsgShift {
   0% { background-position: 0% 50%; }

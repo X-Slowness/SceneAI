@@ -396,11 +396,53 @@ function applyMsgColor(color) {
 let chatThemes = [];
 let activeChatTheme = settings.chatTheme || "default";
 
+function removeGalaxyStars() {
+  const old = document.querySelector(".galaxy-stars");
+  if (old) old.remove();
+}
+function injectGalaxyStars() {
+  const messages = document.querySelector(".messages");
+  if (!messages) return;
+  const container = document.createElement("div");
+  container.className = "galaxy-stars";
+  const stars = [
+    { x: 3, y: 8, s: 10, c: "", d: "A" },
+    { x: 11, y: 42, s: 8, c: "purple", d: "B" },
+    { x: 19, y: 72, s: 10, c: "", d: "A" },
+    { x: 27, y: 18, s: 12, c: "bright", d: "B" },
+    { x: 34, y: 55, s: 10, c: "", d: "A" },
+    { x: 42, y: 88, s: 8, c: "purple", d: "B" },
+    { x: 50, y: 28, s: 12, c: "", d: "A" },
+    { x: 57, y: 62, s: 10, c: "bright", d: "B" },
+    { x: 64, y: 5, s: 10, c: "", d: "A" },
+    { x: 71, y: 48, s: 8, c: "purple", d: "B" },
+    { x: 78, y: 82, s: 12, c: "", d: "A" },
+    { x: 85, y: 35, s: 10, c: "bright", d: "B" },
+    { x: 92, y: 68, s: 10, c: "", d: "A" },
+    { x: 6, y: 92, s: 8, c: "purple", d: "B" },
+    { x: 23, y: 30, s: 12, c: "", d: "A" },
+    { x: 38, y: 78, s: 10, c: "bright", d: "B" },
+    { x: 53, y: 12, s: 10, c: "", d: "A" },
+    { x: 67, y: 58, s: 8, c: "purple", d: "B" },
+    { x: 82, y: 15, s: 12, c: "", d: "A" },
+    { x: 96, y: 52, s: 10, c: "bright", d: "B" }
+  ];
+  stars.forEach(s => {
+    const el = document.createElement("div");
+    el.className = "galaxy-star" + (s.c ? " " + s.c : "");
+    el.style.cssText = `left:${s.x}%;top:${s.y}%;width:${s.s}px;height:${s.s}px;animation:galaxyBlink${s.d} ${3 + Math.random() * 3}s ease-in-out infinite;animation-delay:${Math.random() * 2}s;`;
+    container.appendChild(el);
+  });
+  messages.style.position = "relative";
+  messages.prepend(container);
+}
 function applyChatTheme(themeId) {
   document.body.style.removeProperty("--user-msg");
   document.body.classList.remove("theme-midnight", "theme-ocean", "theme-sunset", "theme-forest", "theme-rose", "theme-neon", "theme-cherry", "theme-galaxy");
+  removeGalaxyStars();
   if (themeId && themeId !== "default") {
     document.body.classList.add("theme-" + themeId);
+    if (themeId === "galaxy") injectGalaxyStars();
   }
   activeChatTheme = themeId;
   settings.chatTheme = themeId;
