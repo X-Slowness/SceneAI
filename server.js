@@ -1618,7 +1618,11 @@ app.post("/api/themes/buy", (req, res) => {
     db.prepare("UPDATE subscriptions SET coins = coins - ? WHERE user_id = ?").run(price, userId);
   }
   owned.push(themeId);
-  db.prepare("UPDATE subscriptions SET owned_themes = ? WHERE user_id = ?").run(JSON.stringify(owned), userId);
+  if (!sub) {
+    db.prepare("INSERT OR IGNORE INTO subscriptions (user_id, tier, owned_themes, created_at) VALUES (?, 'free', ?, ?)").run(userId, JSON.stringify(owned), Date.now());
+  } else {
+    db.prepare("UPDATE subscriptions SET owned_themes = ? WHERE user_id = ?").run(JSON.stringify(owned), userId);
+  }
   saveBackup();
   res.json({ ok: true, owned, coins: (sub && !isAdmin) ? (sub.coins - price) : 0 });
 });
@@ -1633,7 +1637,11 @@ app.post("/api/themes/set", (req, res) => {
   if (!owned.includes(themeId) && userId !== ADMIN_USER_ID) return res.status(403).json({ error: "Theme not owned." });
   if (userId === ADMIN_USER_ID && !owned.includes(themeId)) {
     owned.push(themeId);
-    db.prepare("UPDATE subscriptions SET owned_themes = ? WHERE user_id = ?").run(JSON.stringify(owned), userId);
+    if (!sub) {
+      db.prepare("INSERT OR IGNORE INTO subscriptions (user_id, tier, owned_themes, created_at) VALUES (?, 'free', ?, ?)").run(userId, JSON.stringify(owned), Date.now());
+    } else {
+      db.prepare("UPDATE subscriptions SET owned_themes = ? WHERE user_id = ?").run(JSON.stringify(owned), userId);
+    }
   }
   db.prepare("UPDATE subscriptions SET chat_theme = ? WHERE user_id = ?").run(themeId, userId);
   saveBackup();
