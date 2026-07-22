@@ -2605,23 +2605,17 @@ body.theme-neon .nav-btn.active { background: rgba(0,255,136,0.08); border-color
 body.theme-neon .msg.character { border-color: #252545; }
 body.theme-neon .claim-btn { background: linear-gradient(135deg, #00ff88, #00cc66); }
 
-body.theme-paper {
-  --bg: #f5f0e8; --bg-deep: #ebe5da; --panel: #ffffff; --panel-hover: #f5f0ea;
-  --border: #d5cfc0; --text: #2a2520; --text-dim: #8a8575;
-  --accent: #b5852a; --accent-bright: #c9952c; --accent-dim: #8a6520;
-  --user-msg: #b5852a; --card-bg: #ffffff;
+body.theme-cherry {
+  --bg: #1a0a10; --bg-deep: #100508; --panel: #220e18; --panel-hover: #2c1422;
+  --border: #3a1828; --text: #f5e0e8; --text-dim: #a05068;
+  --accent: #dc2626; --accent-bright: #ef4444; --accent-dim: #991b1b;
+  --user-msg: #dc2626; --card-bg: #220e18;
 }
-body.theme-paper .banner { background: radial-gradient(ellipse at 50% 0%, rgba(181,133,42,0.1) 0%, transparent 60%), var(--bg); }
-body.theme-paper .wordmark { text-shadow: 0 0 60px rgba(181,133,42,0.3), 0 2px 4px rgba(0,0,0,0.1); }
-body.theme-paper .msg.user { box-shadow: 0 4px 20px rgba(181,133,42,0.2); color: #fff; }
-body.theme-paper .msg.user .emph { color: #ffe0ff; }
-body.theme-paper .msg.character { background: #f8f5f0; border-color: #e5e0d5; }
-body.theme-paper .msg.character .emph { color: #7c3aed; }
-body.theme-paper .nav-btn.active { background: rgba(181,133,42,0.1); border-color: rgba(181,133,42,0.25); }
-body.theme-paper .composer { background: var(--panel); }
-body.theme-paper .claim-btn { background: linear-gradient(135deg, #b5852a, #8a6520); }
-body.theme-paper dialog { box-shadow: 0 25px 80px rgba(0,0,0,0.3); }
-body.theme-paper .msg.character .emph { color: #6d28d9; }
+body.theme-cherry .banner { background: radial-gradient(ellipse at 50% 0%, rgba(220,38,38,0.15) 0%, transparent 60%), var(--bg); }
+body.theme-cherry .wordmark { text-shadow: 0 0 60px rgba(220,38,38,0.5), 0 0 120px rgba(220,38,38,0.2), 0 2px 4px rgba(0,0,0,0.8); }
+body.theme-cherry .msg.user { box-shadow: 0 4px 20px rgba(220,38,38,0.3); }
+body.theme-cherry .msg.character { border-color: #3a1828; }
+body.theme-cherry .msg.character .emph { color: #f9a8d4; }
 
 body.theme-galaxy {
   --bg: #0a0618; --bg-deep: #050310; --panel: #100c22; --panel-hover: #181430;

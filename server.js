@@ -1577,7 +1577,7 @@ const THEMES = [
   { id: "forest", name: "Forest", preview: "#081a0e", proPrice: 500, freePrice: 750 },
   { id: "rose", name: "Rose", preview: "#1a0a14", proPrice: 750, freePrice: 1000 },
   { id: "neon", name: "Neon", preview: "#0a0a14", proPrice: 1000, freePrice: 1500 },
-  { id: "paper", name: "Paper", preview: "#f5f0e8", proPrice: 1000, freePrice: 1500 },
+  { id: "cherry", name: "Cherry", preview: "#1a0a10", proPrice: 1000, freePrice: 1500 },
   { id: "galaxy", name: "Galaxy", preview: "#0a0618", proPrice: 1500, freePrice: 2000 }
 ];
 

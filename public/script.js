@@ -398,7 +398,7 @@ let activeChatTheme = settings.chatTheme || "default";
 
 function applyChatTheme(themeId) {
   document.body.style.removeProperty("--user-msg");
-  document.body.classList.remove("theme-midnight", "theme-ocean", "theme-sunset", "theme-forest", "theme-rose", "theme-neon", "theme-paper", "theme-galaxy");
+  document.body.classList.remove("theme-midnight", "theme-ocean", "theme-sunset", "theme-forest", "theme-rose", "theme-neon", "theme-cherry", "theme-galaxy");
   if (themeId && themeId !== "default") {
     document.body.classList.add("theme-" + themeId);
   }
@@ -488,7 +488,7 @@ function getThemePreviewColors(id) {
     forest: { bg: "#0e2214", user: "#22c55e", char: "#1c4028", border: "#285035" },
     rose: { bg: "#22101c", user: "#ec4899", char: "#401835", border: "#552045" },
     neon: { bg: "#10101e", user: "#00ff88", char: "#252545", border: "#303055" },
-    paper: { bg: "#f5f0e8", user: "#b5852a", char: "#e5e0d5", border: "#d5cfc0" },
+    cherry: { bg: "#220e18", user: "#dc2626", char: "#3a1828", border: "#4a2038" },
     galaxy: { bg: "#100c22", user: "#a855f7", char: "#201845", border: "#302555" }
   };
   return map[id] || map.default;
