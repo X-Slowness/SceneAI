@@ -2899,6 +2899,21 @@ groupChatForm.addEventListener("submit", async () => {
 
 // ── Init ──────────────────────────────────────────────────
 async function init() {
+  // Age gate
+  if (!localStorage.getItem("sceneai_age_verified")) {
+    const gate = document.getElementById("ageGate");
+    gate.showModal();
+    document.getElementById("ageYes").addEventListener("click", () => {
+      localStorage.setItem("sceneai_age_verified", "1");
+      gate.close();
+      init();
+    });
+    document.getElementById("ageNo").addEventListener("click", () => {
+      gate.close();
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#999;font-family:sans-serif;text-align:center"><p>You must be 18 or older to use this site.</p></div>';
+    });
+    return;
+  }
   handleOAuthRedirect();
   await checkAdmin();
   await checkSubscription();
