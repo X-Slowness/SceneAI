@@ -538,7 +538,7 @@ applyChatTheme(settings.chatTheme || "default");
 async function syncThemeFromServer() {
   if (!currentUser) return;
   try {
-    const r = await fetch("/api/themes", { headers: authHeaders() });
+    const r = await fetch(`/api/themes?userId=${currentUser.id}&_t=${Date.now()}`, { headers: authHeaders() });
     const d = await r.json();
     if (d.active && d.active !== activeChatTheme) {
       activeChatTheme = d.active;
