@@ -1534,10 +1534,6 @@ app.post("/api/chat", async (req, res) => {
   const trimmedHistory = allHistory.slice(-20).map(m => {
     let text = m.content;
     if (m.role === "user") {
-      const BLOCKED_TERMS = /\b(child|kid|minor|loli|shota|underage|preteen|toddler|infant|baby|pubescent)\b|\b(1[0-6])\s*(year|yr|y\/o|yo)\b|\b(age\s*[:=]?\s*(1[0-7]))\b/i;
-      if (BLOCKED_TERMS.test(text)) {
-        return { role: "user", parts: [{ text: "[Message blocked: violates content policy]" }] };
-      }
       const hints = [];
       text = text.replace(/\(([^)]+)\)/g, (match, inner) => {
         hints.push(inner.trim());
