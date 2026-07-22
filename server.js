@@ -486,7 +486,8 @@ if (!needsRestore && backupExists) {
       const backupData = JSON.parse(fs.readFileSync(BACKUP_PATH, "utf8"));
       const backupMsgs = (backupData.messages || []).length;
       const backupLikes = (backupData.likes || []).length;
-      if (backupMsgs > msgCount || backupLikes > 0) {
+      const dbLikes = db.prepare("SELECT COUNT(*) as c FROM likes").get().c;
+      if (backupMsgs > msgCount + 10 || backupLikes > dbLikes + 5) {
         needsRestore = true;
         console.log("Backup has more data than current DB. Restoring...");
       }
