@@ -511,7 +511,7 @@ async function handleThemeClick(t) {
     modal.showModal();
     return;
   }
-  if (!confirm(`Buy "${t.name}" theme for ${t.price} coins?`)) return;
+  if (!(await showConfirm(`Buy "${t.name}" theme for ${t.price} coins?`))) return;
   try {
     const res = await fetch("/api/themes/buy", {
       method: "POST",
