@@ -2692,37 +2692,33 @@ body.theme-galaxy .messages {
   position: relative;
 }
 body.theme-galaxy .messages::before {
-  content: '★';
+  content: '';
   position: fixed; inset: 0;
-  color: transparent;
-  font-size: 10px;
-  text-shadow:
-    2px 2px 0 transparent, -2px -2px 0 transparent,
-    2px -2px 0 transparent, -2px 2px 0 transparent;
-  background: none;
   pointer-events: none;
   z-index: 0;
 }
 body.theme-galaxy .messages::after {
   content: '';
   position: fixed; inset: 0;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(192,132,252,0.7)'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(168,85,247,0.5)'/%3E%3C/svg%3E");
-  background-position:
-    5% 10%, 15% 45%, 25% 75%,
-    35% 20%, 48% 55%, 58% 85%,
-    68% 30%, 78% 65%, 88% 15%,
-    95% 50%, 10% 90%, 42% 8%,
-    72% 42%, 85% 78%, 55% 92%,
-    20% 32%, 62% 58%, 38% 88%,
-    8% 62%, 92% 38%;
-  background-size: 12px 12px, 10px 10px, 8px 8px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='white'/%3E%3C/svg%3E");
+  background-size: 10px 10px;
   background-repeat: no-repeat;
-  animation: galaxyTwinkle 5s ease-in-out infinite alternate;
+  background-position:
+    3% 8%, 11% 42%, 19% 72%, 27% 18%, 34% 55%,
+    42% 88%, 50% 28%, 57% 62%, 64% 5%, 71% 48%,
+    78% 82%, 85% 35%, 92% 68%, 6% 92%, 23% 30%,
+    38% 78%, 53% 12%, 67% 58%, 82% 15%, 96% 52%;
+  opacity: 0.7;
+  animation: galaxyChatStars 3s ease-in-out infinite alternate;
   pointer-events: none;
   z-index: 0;
+}
+@keyframes galaxyChatStars {
+  0% { opacity: 0.3; }
+  25% { opacity: 0.9; }
+  50% { opacity: 0.4; }
+  75% { opacity: 1; }
+  100% { opacity: 0.3; }
 }
 body.theme-galaxy .messages > * {
   position: relative;
