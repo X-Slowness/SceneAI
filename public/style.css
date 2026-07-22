@@ -2692,29 +2692,34 @@ body.theme-galaxy .messages {
   position: relative;
 }
 body.theme-galaxy .messages::before {
+  content: '★';
+  position: fixed; inset: 0;
+  color: transparent;
+  font-size: 10px;
+  text-shadow:
+    2px 2px 0 transparent, -2px -2px 0 transparent,
+    2px -2px 0 transparent, -2px 2px 0 transparent;
+  background: none;
+  pointer-events: none;
+  z-index: 0;
+}
+body.theme-galaxy .messages::after {
   content: '';
   position: fixed; inset: 0;
   background-image:
-    radial-gradient(2px 2px at 5% 10%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(2.5px 2.5px at 12% 35%, rgba(192,132,252,1), transparent),
-    radial-gradient(2px 2px at 20% 60%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(3px 3px at 28% 18%, rgba(168,85,247,0.9), transparent),
-    radial-gradient(2px 2px at 35% 80%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(2.5px 2.5px at 42% 45%, rgba(192,132,252,0.8), transparent),
-    radial-gradient(2px 2px at 50% 5%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(3px 3px at 58% 70%, rgba(168,85,247,0.7), transparent),
-    radial-gradient(2px 2px at 65% 30%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(2.5px 2.5px at 72% 55%, rgba(192,132,252,0.9), transparent),
-    radial-gradient(2px 2px at 80% 85%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(3px 3px at 88% 20%, rgba(168,85,247,1), transparent),
-    radial-gradient(2px 2px at 95% 48%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(2.5px 2.5px at 10% 90%, rgba(192,132,252,0.7), transparent),
-    radial-gradient(2px 2px at 30% 40%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(3px 3px at 48% 25%, rgba(168,85,247,0.8), transparent),
-    radial-gradient(2px 2px at 68% 75%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(2.5px 2.5px at 82% 60%, rgba(192,132,252,0.9), transparent),
-    radial-gradient(2px 2px at 92% 12%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(3px 3px at 15% 50%, rgba(168,85,247,0.7), transparent);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(192,132,252,0.7)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 12 12'%3E%3Cpath d='M6 0l1.5 4.5L12 6l-4.5 1.5L6 12l-1.5-4.5L0 6l4.5-1.5z' fill='rgba(168,85,247,0.5)'/%3E%3C/svg%3E");
+  background-position:
+    5% 10%, 15% 45%, 25% 75%,
+    35% 20%, 48% 55%, 58% 85%,
+    68% 30%, 78% 65%, 88% 15%,
+    95% 50%, 10% 90%, 42% 8%,
+    72% 42%, 85% 78%, 55% 92%,
+    20% 32%, 62% 58%, 38% 88%,
+    8% 62%, 92% 38%;
+  background-size: 12px 12px, 10px 10px, 8px 8px;
+  background-repeat: no-repeat;
   animation: galaxyTwinkle 5s ease-in-out infinite alternate;
   pointer-events: none;
   z-index: 0;
