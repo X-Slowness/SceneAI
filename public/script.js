@@ -424,6 +424,10 @@ async function fetchAndRenderThemes() {
     chatThemes = data.themes || [];
     activeChatTheme = data.active || "default";
     settings.chatTheme = activeChatTheme;
+    if (data.msg_color && data.msg_color !== settings.msgColor) {
+      settings.msgColor = data.msg_color;
+      applyMsgColor(data.msg_color);
+    }
     saveSettings(settings);
     applyChatTheme(activeChatTheme);
     renderThemeGrid();
@@ -529,6 +533,27 @@ async function handleThemeClick(t) {
 applyTheme(settings.theme);
 applyMsgColor(settings.msgColor || "#c9952c");
 applyChatTheme(settings.chatTheme || "default");
+
+// ── Cross-device sync: re-fetch theme + msg color on focus/visibility ──
+async function syncThemeFromServer() {
+  if (!currentUser) return;
+  try {
+    const r = await fetch("/api/themes", { headers: authHeaders() });
+    const d = await r.json();
+    if (d.active && d.active !== activeChatTheme) {
+      activeChatTheme = d.active;
+      settings.chatTheme = d.active;
+      applyChatTheme(d.active);
+    }
+    if (d.msg_color && d.msg_color !== settings.msgColor) {
+      settings.msgColor = d.msg_color;
+      applyMsgColor(d.msg_color);
+    }
+  } catch(e) {}
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) syncThemeFromServer(); });
+window.addEventListener("focus", syncThemeFromServer);
+setInterval(syncThemeFromServer, 30000);
 
 // ── Favorites ─────────────────────────────────────────────
 async function favoriteCharacter(id) {
@@ -1111,6 +1136,7 @@ document.querySelectorAll(".color-swatch").forEach(swatch => {
     settings.msgColor = swatch.dataset.color;
     applyMsgColor(settings.msgColor);
     saveSettings(settings);
+    fetch("/api/themes/msg-color", { method: "POST", headers: { ...authHeaders(), "Content-Type": "application/json" }, body: JSON.stringify({ color: settings.msgColor }) });
   });
 });
 

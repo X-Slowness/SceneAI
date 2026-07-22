@@ -111,9 +111,9 @@ app.post("/api/admin/restore", requireAdmin, (req, res) => {
         db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
       }
       for (const s of (data.subscriptions || [])) {
-        db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, timezone_offset, chat_theme, owned_themes, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-          .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.timezone_offset || 0, s.chat_theme || 'default', s.owned_themes || '["default"]', s.created_at);
+        db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, timezone_offset, chat_theme, owned_themes, msg_color, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+          .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.timezone_offset || 0, s.chat_theme || 'default', s.owned_themes || '["default"]', s.msg_color || '#c9952c', s.created_at);
       }
       for (const m of (data.memories || [])) {
         db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)")
@@ -297,6 +297,7 @@ try { db.exec("ALTER TABLE subscriptions ADD COLUMN daily_streak_claimed INTEGER
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN timezone_offset INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN chat_theme TEXT DEFAULT 'default'"); } catch(e) {}
 try { db.exec("ALTER TABLE subscriptions ADD COLUMN owned_themes TEXT DEFAULT '[\"default\"]'"); } catch(e) {}
+try { db.exec("ALTER TABLE subscriptions ADD COLUMN msg_color TEXT DEFAULT '#c9952c'"); } catch(e) {}
 
 // Seed like_count from likes table for any characters that have 0 but should have more
 db.exec(`UPDATE characters SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.character_id = characters.id) WHERE like_count = 0 AND id IN (SELECT character_id FROM likes)`);
@@ -528,8 +529,8 @@ if (needsRestore) {
             db.prepare("INSERT OR IGNORE INTO favorites (character_id, user_id) VALUES (?, ?)").run(f.character_id, f.user_id);
           }
           for (const s of (data.subscriptions || [])) {
-            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, timezone_offset, chat_theme, owned_themes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-              .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.timezone_offset || 0, s.chat_theme || 'default', s.owned_themes || '["default"]', s.created_at);
+            db.prepare(`INSERT OR REPLACE INTO subscriptions (user_id, tier, lemon_order_id, lemon_subscription_id, current_period_end, longer_messages, coins, free_characters_used, streak_day, last_claim_date, daily_msg_count, daily_chars_chatted, daily_reset_date, weekly_msg_count, weekly_chars_chatted, weekly_reset_date, total_messages, characters_created, daily_likes, weekly_likes, total_likes_given, daily_streak_claimed, timezone_offset, chat_theme, owned_themes, msg_color, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+              .run(s.user_id, s.tier, s.lemon_order_id || null, s.lemon_subscription_id || null, s.current_period_end || null, s.longer_messages || 0, s.coins || 0, s.free_characters_used || 0, s.streak_day || 0, s.last_claim_date || '', s.daily_msg_count || 0, s.daily_chars_chatted || '[]', s.daily_reset_date || '', s.weekly_msg_count || 0, s.weekly_chars_chatted || '[]', s.weekly_reset_date || '', s.total_messages || 0, s.characters_created || 0, s.daily_likes || 0, s.weekly_likes || 0, s.total_likes_given || 0, s.daily_streak_claimed || 0, s.timezone_offset || 0, s.chat_theme || 'default', s.owned_themes || '["default"]', s.msg_color || '#c9952c', s.created_at);
           }
           for (const m of (data.memories || [])) {
             db.prepare("INSERT OR IGNORE INTO memories (id, character_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)").run(m.id, m.character_id, m.user_id, m.content, m.created_at);
@@ -1601,7 +1602,7 @@ app.get("/api/themes", (req, res) => {
     const price = isAdmin ? 0 : (isSub ? t.proPrice : t.freePrice);
     return { id: t.id, name: t.name, preview: t.preview, owned: isOwned, price };
   });
-  res.json({ themes: result, active, coins, is_subscriber: isSub, is_admin: isAdmin });
+  res.json({ themes: result, active, coins, is_subscriber: isSub, is_admin: isAdmin, msg_color: sub?.msg_color || '#c9952c' });
 });
 
 app.post("/api/themes/buy", (req, res) => {
@@ -1652,6 +1653,21 @@ app.post("/api/themes/set", (req, res) => {
   db.prepare("UPDATE subscriptions SET chat_theme = ? WHERE user_id = ?").run(themeId, userId);
   saveBackup();
   res.json({ ok: true, active: themeId });
+});
+
+app.post("/api/themes/msg-color", (req, res) => {
+  const userId = req.headers["x-user-id"];
+  if (!userId) return res.status(401).json({ error: "Sign in required." });
+  const { color } = req.body;
+  if (!color) return res.status(400).json({ error: "color required." });
+  const sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
+  if (!sub) {
+    db.prepare("INSERT OR IGNORE INTO subscriptions (user_id, tier, msg_color, created_at) VALUES (?, 'free', ?, ?)").run(userId, color, Date.now());
+  } else {
+    db.prepare("UPDATE subscriptions SET msg_color = ? WHERE user_id = ?").run(color, userId);
+  }
+  saveBackup();
+  res.json({ ok: true, msg_color: color });
 });
 
 app.listen(PORT, () => {
