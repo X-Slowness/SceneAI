@@ -534,6 +534,14 @@ applyTheme(settings.theme);
 applyMsgColor(settings.msgColor || "#c9952c");
 applyChatTheme(settings.chatTheme || "default");
 
+// Immediately fetch server theme if user is logged in (prevents flash on hard refresh)
+if (currentUser) {
+  fetch("/api/themes", { headers: authHeaders() }).then(r => r.json()).then(d => {
+    if (d.active) { activeChatTheme = d.active; settings.chatTheme = d.active; applyChatTheme(d.active); }
+    if (d.msg_color && d.msg_color !== settings.msgColor) { settings.msgColor = d.msg_color; applyMsgColor(d.msg_color); }
+  }).catch(() => {});
+}
+
 // ── Cross-device sync: re-fetch theme + msg color on focus/visibility ──
 async function syncThemeFromServer() {
   if (!currentUser) return;
