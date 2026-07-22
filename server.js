@@ -881,6 +881,10 @@ app.post("/api/characters", (req, res) => {
   }
   const { name, tagline, color, photo, photoPos, photoZoom, persona, firstMessage, tags } = req.body;
   if (!name || !persona) return res.status(400).json({ error: "Name and persona required." });
+  const BLOCKED_TERMS = /\b(child|kid|minor|loli|shota|underage|preteen|toddler|infant|baby|pubescent)\b|\b(1[0-6])\s*(year|yr|y\/o|yo)\b|\b(age\s*[:=]?\s*(1[0-7]))\b/i;
+  if (BLOCKED_TERMS.test([name, tagline, persona, firstMessage].join(" "))) {
+    return res.status(403).json({ error: "This content violates our policies." });
+  }
   const id = crypto.randomUUID();
   db.prepare(
     "INSERT INTO characters (id, name, tagline, color, photo, photo_pos, photo_zoom, persona, first_message, tags, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -1193,6 +1197,11 @@ app.post("/api/generate-character", async (req, res) => {
 
   const { concept } = req.body;
   if (!concept) return res.status(400).json({ error: "Concept required." });
+
+  const BLOCKED_TERMS = /\b(child|kid|minor|loli|shota|underage|preteen|toddler|infant|baby|pubescent)\b|\b(1[0-6])\s*(year|yr|y\/o|yo)\b|\b(age\s*[:=]?\s*(1[0-7]))\b/i;
+  if (BLOCKED_TERMS.test(concept)) {
+    return res.status(403).json({ error: "This concept violates our policies." });
+  }
 
   const ALLOWED_TAGS = ["Male","Female","Male POV","Female POV","Romantic","Drama","Action","Adventure","Fantasy","Isekai","Multiple Characters","Friend","Scenario","Cheating","Comedy","Gothic","Villain","Married","Roommate","Chubby","Girlfriend","Boyfriend","Enemy","Gang","Crush","Travel","Streamer","Anime","Real Life","Game","Single"];
 
@@ -1525,6 +1534,10 @@ app.post("/api/chat", async (req, res) => {
   const trimmedHistory = allHistory.slice(-20).map(m => {
     let text = m.content;
     if (m.role === "user") {
+      const BLOCKED_TERMS = /\b(child|kid|minor|loli|shota|underage|preteen|toddler|infant|baby|pubescent)\b|\b(1[0-6])\s*(year|yr|y\/o|yo)\b|\b(age\s*[:=]?\s*(1[0-7]))\b/i;
+      if (BLOCKED_TERMS.test(text)) {
+        return { role: "user", parts: [{ text: "[Message blocked: violates content policy]" }] };
+      }
       const hints = [];
       text = text.replace(/\(([^)]+)\)/g, (match, inner) => {
         hints.push(inner.trim());
