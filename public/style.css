@@ -1839,6 +1839,44 @@ dialog input[type="color"] {
 }
 
 #charInfoModal { width: 440px; }
+#photoLightbox {
+  background: none;
+  border: none;
+  padding: 0;
+  max-width: 95vw;
+  max-height: 95vh;
+  overflow: visible;
+}
+#photoLightbox::backdrop {
+  background: rgba(0,0,0,0.85);
+}
+.photo-lightbox-img {
+  display: block;
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 12px;
+  object-fit: contain;
+  background: var(--bg);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.photo-lightbox-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.photo-lightbox-close:hover { background: rgba(0,0,0,0.85); }
 .char-info-photo-wrap {
   display: flex;
   justify-content: center;

@@ -1850,6 +1850,29 @@ charInfoModal.addEventListener("click", (e) => {
   if (e.target === charInfoModal) charInfoModal.close();
 });
 
+const photoLightbox = document.getElementById("photoLightbox");
+const photoLightboxImg = document.getElementById("photoLightboxImg");
+activeAvatarEl.style.cursor = "pointer";
+activeAvatarEl.addEventListener("click", () => {
+  const c = characters.find(x => x.id === activeId);
+  if (!c || !c.photo) return;
+  photoLightboxImg.src = c.photo;
+  photoLightboxImg.style.objectPosition = `50% ${c.photo_pos != null ? c.photo_pos : 50}%`;
+  const zoom = c.photo_zoom != null ? c.photo_zoom : 1;
+  if (zoom < 1) {
+    photoLightboxImg.style.objectFit = "contain";
+    photoLightboxImg.style.transform = "";
+  } else {
+    photoLightboxImg.style.objectFit = "cover";
+    photoLightboxImg.style.transform = zoom !== 1 ? `scale(${zoom})` : "";
+  }
+  photoLightbox.showModal();
+});
+document.getElementById("photoLightboxClose").addEventListener("click", () => photoLightbox.close());
+photoLightbox.addEventListener("click", (e) => {
+  if (e.target === photoLightbox) photoLightbox.close();
+});
+
 chatMenuDelete.addEventListener("click", async () => {
   chatMenuDropdown.classList.remove("open");
   const c = characters.find(x => x.id === activeId);
