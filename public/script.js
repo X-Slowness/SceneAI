@@ -2037,6 +2037,14 @@ function renderMessages() {
     return;
   }
   currentMessages.forEach((m, idx) => {
+    if (m.content === "(continue)") {
+      const indicator = document.createElement("div");
+      indicator.className = "msg-continue-indicator";
+      indicator.textContent = "▸ Continue";
+      messagesEl.appendChild(indicator);
+      return;
+    }
+
     const wrap = document.createElement("div");
     wrap.className = "msg-wrap " + (m.role === "user" ? "user" : "character");
 
@@ -2128,6 +2136,18 @@ function renderMessages() {
       wrap.appendChild(regenBtn);
     }
 
+    if (m.role === "assistant") {
+      const continueBtn = document.createElement("button");
+      continueBtn.className = "msg-continue-btn";
+      continueBtn.title = "Continue";
+      continueBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+      continueBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        continueMessage(idx);
+      });
+      wrap.appendChild(continueBtn);
+    }
+
     messagesEl.appendChild(wrap);
   });
   messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -2154,6 +2174,45 @@ async function regenerateResponse(idx) {
   const c = characters.find(x => x.id === activeId);
   currentMessages.splice(idx, 1);
   await saveMessages(activeId, currentMessages);
+  renderMessages();
+  const typingEl = document.createElement("div");
+  typingEl.className = "msg typing";
+  typingEl.textContent = `${c.name} is typing…`;
+  messagesEl.appendChild(typingEl);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  sendBtn.disabled = true;
+  input.disabled = true;
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ persona: c.persona, firstMessage: c.first_message || "", history: currentMessages, username: profileData.username || (currentUser ? currentUser.name.split(" ")[0] : "User"), characterId: activeId, userId: currentUser ? currentUser.id : null })
+    });
+    if (!res.ok) throw new Error("Request failed: " + res.status);
+    const data = await res.json();
+    const newMsg = { role: "assistant", content: data.reply, ts: Date.now() };
+    currentMessages.push(newMsg);
+    await addMessage(activeId, "assistant", newMsg.content, newMsg.ts);
+  } catch (err) {
+    const errMsg = "(Something went wrong reaching the server. Check that your backend is running and your API key is set.)";
+    currentMessages.push({ role: "assistant", content: errMsg, ts: Date.now() });
+    await addMessage(activeId, "assistant", errMsg, Date.now());
+    console.error(err);
+  } finally {
+    typingEl.remove();
+    sendBtn.disabled = false;
+    input.disabled = false;
+    renderMessages();
+    input.focus();
+  }
+}
+
+async function continueMessage(idx) {
+  const c = characters.find(x => x.id === activeId);
+  if (!c) return;
+  const continueMsg = { role: "user", content: "(continue)", ts: Date.now() };
+  currentMessages.push(continueMsg);
+  await addMessage(activeId, "user", continueMsg.content, continueMsg.ts);
   renderMessages();
   const typingEl = document.createElement("div");
   typingEl.className = "msg typing";

@@ -1417,6 +1417,38 @@ dialog input[type="color"] {
 .msg-wrap.character:last-child .msg-menu-btn { top: 6px; right: -36px; }
 .msg-wrap.user:last-child .msg-menu-btn { top: 6px; left: -36px; }
 
+.msg-continue-btn {
+  position: absolute;
+  bottom: -12px;
+  right: 20px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(8,8,10,0.95);
+  color: var(--text-dim);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+.msg-wrap.character .msg-continue-btn { display: flex; }
+.msg-continue-btn:hover {
+  color: var(--accent-bright);
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(201,149,44,0.3);
+}
+.msg-continue-indicator {
+  align-self: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.5;
+  padding: 2px 0;
+  user-select: none;
+}
+
 .msg-dropdown button {
   display: flex;
   align-items: center;

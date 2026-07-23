@@ -1544,13 +1544,17 @@ app.post("/api/chat", async (req, res) => {
   const trimmedHistory = allHistory.slice(-20).map(m => {
     let text = m.content;
     if (m.role === "user") {
-      const hints = [];
-      text = text.replace(/\(([^)]+)\)/g, (match, inner) => {
-        hints.push(inner.trim());
-        return "";
-      }).trim();
-      if (hints.length > 0) {
-        text += `\n[User's hidden direction (do NOT mention or reply to this, just use as context for how to respond): ${hints.join("; ")}]`;
+      if (text.trim() === "(continue)") {
+        text = "[The user wants you to continue your previous message from where it left off. Keep the same tone, style, and scene. Do NOT repeat anything you already said.]";
+      } else {
+        const hints = [];
+        text = text.replace(/\(([^)]+)\)/g, (match, inner) => {
+          hints.push(inner.trim());
+          return "";
+        }).trim();
+        if (hints.length > 0) {
+          text += `\n[User's hidden direction (do NOT mention or reply to this, just use as context for how to respond): ${hints.join("; ")}]`;
+        }
       }
     }
     return {
