@@ -113,6 +113,7 @@ function applyAdminUI() {
     showGallery();
   }
   updateCreateBtnBadge();
+  updateAdminMenuItems();
 }
 
 let coinInfo = { coins: 0, free_remaining: 10, is_subscriber: false };
@@ -1884,6 +1885,45 @@ const chatMenuMemory = document.getElementById("chatMenuMemory");
 chatMenuMemory.addEventListener("click", () => {
   chatMenuDropdown.classList.remove("open");
   openMemoryPanel();
+});
+
+const chatMenuEditFirstMsg = document.getElementById("chatMenuEditFirstMsg");
+const editFirstMsgModal = document.getElementById("editFirstMsgModal");
+const editFirstMsgInput = document.getElementById("editFirstMsgInput");
+
+function updateAdminMenuItems() {
+  chatMenuEditFirstMsg.style.display = (currentUser && isAdmin) ? "" : "none";
+}
+
+chatMenuEditFirstMsg.addEventListener("click", () => {
+  chatMenuDropdown.classList.remove("open");
+  const c = characters.find(x => x.id === activeId);
+  if (!c) return;
+  editFirstMsgInput.value = c.first_message || "";
+  editFirstMsgModal.showModal();
+});
+
+document.getElementById("editFirstMsgCancel").addEventListener("click", () => editFirstMsgModal.close());
+editFirstMsgModal.addEventListener("click", (e) => {
+  if (e.target === editFirstMsgModal) editFirstMsgModal.close();
+});
+
+document.getElementById("editFirstMsgSave").addEventListener("click", async () => {
+  const c = characters.find(x => x.id === activeId);
+  if (!c) return;
+  const newFirstMsg = editFirstMsgInput.value.trim();
+  try {
+    const res = await fetch(`/api/characters/${activeId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "x-user-id": currentUser.id },
+      body: JSON.stringify({ name: c.name, tagline: c.tagline || "", persona: c.persona, color: c.color, photo: c.photo, photoPos: c.photo_pos ?? 50, photoZoom: c.photo_zoom ?? 1, firstMessage: newFirstMsg, tags: c.tags || [] })
+    });
+    if (res.ok) {
+      c.first_message = newFirstMsg;
+      editFirstMsgModal.close();
+      renderMessages();
+    }
+  } catch (e) { console.error("Failed to update first message:", e); }
 });
 
 // ── Memory Panel ──────────────────────────────────────────
