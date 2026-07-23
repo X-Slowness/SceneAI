@@ -86,6 +86,10 @@
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>
           Quests
         </button>
+        <button id="meBtn" class="nav-btn" title="Your persona">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Me
+        </button>
         <button id="newCharacterBtn" class="nav-btn create-nav-btn" style="display:none">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
           Create Character
@@ -246,6 +250,40 @@
         </header>
         <section class="quests-section">
           <div id="questsContent" class="quests-content"></div>
+        </section>
+      </div>
+
+      <!-- Me view -->
+      <div id="meView" hidden>
+        <header class="banner banner-sm">
+          <div class="banner-inner">
+            <h1 class="wordmark">Me</h1>
+            <p class="banner-tag">Who you are in conversations.</p>
+          </div>
+        </header>
+        <section class="me-section">
+          <div class="me-card">
+            <div class="me-field">
+              <label class="me-label">Name</label>
+              <p class="me-hint">What characters will call you</p>
+              <input id="meName" type="text" class="me-input" maxlength="30" placeholder="e.g. Alex">
+            </div>
+            <div class="me-field">
+              <label class="me-label">Gender</label>
+              <p class="me-hint">How characters will refer to you</p>
+              <div class="me-gender-row">
+                <button type="button" class="me-gender-btn" data-gender="male">Male</button>
+                <button type="button" class="me-gender-btn" data-gender="female">Female</button>
+              </div>
+            </div>
+            <div class="me-field">
+              <label class="me-label">About you</label>
+              <p class="me-hint">Information you want characters to know (age, work, appearance, etc.)</p>
+              <textarea id="meInfo" class="me-textarea" rows="5" maxlength="500" placeholder="e.g. I'm 24, work as a nurse, short brown hair, love coffee..."></textarea>
+            </div>
+            <button id="meSaveBtn" class="primary me-save-btn">Save</button>
+            <p id="meStatus" class="me-status" style="display:none;"></p>
+          </div>
         </section>
       </div>
 

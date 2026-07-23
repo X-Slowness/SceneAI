@@ -685,12 +685,14 @@ const trendingGalleryEl = document.getElementById("trendingGallery");
 const mostLikedGalleryEl = document.getElementById("mostLikedGallery");
 const myCharactersGalleryEl = document.getElementById("myCharactersGallery");
 const questsView = document.getElementById("questsView");
+const meView = document.getElementById("meView");
 const questsContentEl = document.getElementById("questsContent");
 const homeNavBtn = document.getElementById("homeNavBtn");
 const recentChatsBtn = document.getElementById("recentChatsBtn");
 const favoritesBtn = document.getElementById("favoritesBtn");
 const myCharactersBtn = document.getElementById("myCharactersBtn");
 const questsBtn = document.getElementById("questsBtn");
+const meBtn = document.getElementById("meBtn");
 const trendingBtn = document.getElementById("trendingBtn");
 const mostLikedBtn = document.getElementById("mostLikedBtn");
 
@@ -1492,6 +1494,7 @@ function setTab(tab) {
   trendingBtn.classList.toggle("active", tab === "trending");
   mostLikedBtn.classList.toggle("active", tab === "mostLiked");
   questsBtn.classList.toggle("active", tab === "quests");
+  meBtn.classList.toggle("active", tab === "me");
   groupChatsBtn.classList.toggle("active", tab === "groupChats");
   if (tab) localStorage.setItem("sceneai_activeTab", tab);
 }
@@ -1510,6 +1513,7 @@ function showGallery() {
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
+  meView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   publicProfileView.hidden = true;
@@ -1529,6 +1533,7 @@ function showRecentChats() {
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
+  meView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   publicProfileView.hidden = true;
@@ -1547,6 +1552,7 @@ function showFavorites() {
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
+  meView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   publicProfileView.hidden = true;
@@ -1565,6 +1571,7 @@ function showTrending() {
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
+  meView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   publicProfileView.hidden = true;
@@ -1583,6 +1590,7 @@ function showMostLiked() {
   trendingView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
+  meView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   publicProfileView.hidden = true;
@@ -1601,6 +1609,7 @@ function showMyCharacters() {
   trendingView.hidden = true;
   mostLikedView.hidden = true;
   questsView.hidden = true;
+  meView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   publicProfileView.hidden = true;
@@ -1636,10 +1645,30 @@ function showQuests() {
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   publicProfileView.hidden = true;
+  meView.hidden = true;
   questsView.hidden = false;
   setTab("quests");
   document.querySelector(".app").classList.remove("chat-active");
   renderQuests();
+}
+
+function showMe() {
+  activeId = null;
+  chatView.hidden = true;
+  galleryView.hidden = true;
+  recentChatsView.hidden = true;
+  favoritesView.hidden = true;
+  trendingView.hidden = true;
+  mostLikedView.hidden = true;
+  myCharactersView.hidden = true;
+  groupChatView.hidden = true;
+  groupChatsView.hidden = true;
+  publicProfileView.hidden = true;
+  questsView.hidden = true;
+  meView.hidden = false;
+  setTab("me");
+  document.querySelector(".app").classList.remove("chat-active");
+  loadUserInfo();
 }
 
 async function renderQuests() {
@@ -1717,6 +1746,7 @@ recentChatsBtn.addEventListener("click", showRecentChats);
 favoritesBtn.addEventListener("click", showFavorites);
 myCharactersBtn.addEventListener("click", showMyCharacters);
 questsBtn.addEventListener("click", showQuests);
+meBtn.addEventListener("click", showMe);
 trendingBtn.addEventListener("click", showTrending);
 mostLikedBtn.addEventListener("click", showMostLiked);
 
@@ -1751,6 +1781,7 @@ async function openChat(id) {
   recentChatsView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
+  meView.hidden = true;
   publicProfileView.hidden = true;
   chatView.hidden = false;
   document.querySelector(".app").classList.add("chat-active");
@@ -2564,6 +2595,7 @@ async function openProfile(userId) {
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
+  meView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = true;
   galleryView.hidden = true;
@@ -2744,6 +2776,7 @@ function showGroupChats() {
   mostLikedView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
+  meView.hidden = true;
   groupChatView.hidden = true;
   groupChatsView.hidden = false;
   setTab("groupChats");
@@ -2983,5 +3016,51 @@ async function init() {
   }
   initGoogleSignIn();
 }
+
+// ── Me (User Info) ──────────────────────────────────────
+const meNameInput = document.getElementById("meName");
+const meInfoTextarea = document.getElementById("meInfo");
+const meSaveBtn = document.getElementById("meSaveBtn");
+const meStatus = document.getElementById("meStatus");
+let meSelectedGender = "";
+
+document.querySelectorAll(".me-gender-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".me-gender-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    meSelectedGender = btn.dataset.gender;
+  });
+});
+
+async function loadUserInfo() {
+  if (!currentUser) return;
+  try {
+    const res = await fetch(`/api/user-info?userId=${currentUser.id}`);
+    const data = await res.json();
+    meNameInput.value = data.user_name || "";
+    meInfoTextarea.value = data.user_info || "";
+    meSelectedGender = data.user_gender || "";
+    document.querySelectorAll(".me-gender-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.gender === meSelectedGender);
+    });
+  } catch (e) { console.error("Failed to load user info:", e); }
+}
+
+meSaveBtn.addEventListener("click", async () => {
+  if (!currentUser) return requireAuth();
+  try {
+    const res = await fetch("/api/user-info", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-user-id": currentUser.id },
+      body: JSON.stringify({ user_name: meNameInput.value.trim(), user_gender: meSelectedGender, user_info: meInfoTextarea.value.trim() })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      meStatus.textContent = "Saved!";
+      meStatus.style.display = "";
+      setTimeout(() => { meStatus.style.display = "none"; }, 2000);
+    }
+  } catch (e) { console.error("Failed to save user info:", e); }
+});
 
 init();

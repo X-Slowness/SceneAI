@@ -2854,3 +2854,28 @@ body.theme-forest .pkg-badge, body.theme-rose .pkg-badge, body.theme-galaxy .pkg
 }
 .longer-toggle .toggle-label-off { color: var(--accent-bright); }
 .longer-toggle .toggle-label-on { color: var(--text-dim); }
+
+/* Me view */
+.me-section { max-width: 500px; margin: 0 auto; padding: 24px; }
+.me-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.me-field { margin-bottom: 20px; }
+.me-label { display: block; font-weight: 600; color: var(--text); margin-bottom: 2px; font-size: 14px; }
+.me-hint { font-size: 12px; color: var(--text-dim); margin: 0 0 8px; }
+.me-input, .me-textarea {
+  width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font-family: inherit; font-size: 14px; box-sizing: border-box;
+}
+.me-input:focus, .me-textarea:focus { outline: none; border-color: var(--accent); }
+.me-textarea { resize: vertical; min-height: 80px; }
+.me-gender-row { display: flex; gap: 8px; }
+.me-gender-btn {
+  flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text-dim); font-family: inherit; font-size: 14px; cursor: pointer;
+  transition: all 0.2s;
+}
+.me-gender-btn:hover { border-color: var(--accent-dim); }
+.me-gender-btn.active {
+  background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600;
+}
+.me-save-btn { width: 100%; margin-top: 8px; padding: 10px; }
+.me-status { text-align: center; font-size: 13px; color: var(--accent-bright); margin-top: 8px; }
