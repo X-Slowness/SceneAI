@@ -860,9 +860,8 @@ app.post("/api/daily-reward/claim", (req, res) => {
     }
   }
   const reward = DAILY_REWARDS[nextDay] || 50;
-  db.prepare("UPDATE subscriptions SET coins = coins + ?, streak_day = ?, last_claim_date = ? WHERE user_id = ?")
-    .run(reward, nextDay, today, userId);
-  db.prepare("UPDATE subscriptions SET daily_streak_claimed = 1 WHERE user_id = ?").run(userId);
+  db.prepare("UPDATE subscriptions SET coins = coins + ?, streak_day = ?, last_claim_date = ?, daily_streak_claimed = 1, daily_reset_date = ? WHERE user_id = ?")
+    .run(reward, nextDay, today, today, userId);
   saveBackup();
   const updated = db.prepare("SELECT coins, streak_day FROM subscriptions WHERE user_id = ?").get(userId);
   res.json({ ok: true, streak_day: nextDay, reward, total_coins: updated.coins });
