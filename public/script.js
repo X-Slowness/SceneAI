@@ -927,12 +927,8 @@ aiGenUseBtn.addEventListener("click", () => {
   document.getElementById("charTagline").value = tagline;
   document.getElementById("charPersona").value = persona;
   document.getElementById("charFirstMsg").value = firstMsg;
-  const tags = tagsStr.split(",").map(t => t.trim()).filter(Boolean);
-  document.querySelectorAll(".tag-chip").forEach(chip => {
-    const isSelected = tags.includes(chip.dataset.tag);
-    chip.classList.toggle("selected", isSelected);
-  });
-  selectedTags = tags;
+  selectedTags = tagsStr.split(",").map(t => t.trim()).filter(Boolean);
+  renderTagChips(tagsContainer, selectedTags);
 });
 
 photoInput.addEventListener("change", () => {
