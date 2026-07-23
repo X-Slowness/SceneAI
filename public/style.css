@@ -2694,7 +2694,10 @@ body.theme-galaxy .chat-view:not([hidden]) {
 body.theme-galaxy .galaxy-stars {
   position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
 }
-body.theme-galaxy .chat-view > .chat-header,
+body.theme-galaxy .chat-view > .chat-header {
+  position: relative;
+  z-index: 2;
+}
 body.theme-galaxy .chat-view > .messages,
 body.theme-galaxy .chat-view > .composer {
   position: relative;
