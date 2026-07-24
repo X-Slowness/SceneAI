@@ -1215,7 +1215,7 @@ app.post("/api/generate-character", async (req, res) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: `You are a character creator. Given a short concept, generate a full character profile. Respond ONLY with valid JSON, no markdown, no code blocks.\n\nIMPORTANT: Use simple, casual, everyday English. No fancy words, no Shakespeare, no overly formal language. Write like a normal person talking. Keep it natural and easy to read.\n\nJSON schema:\n{\n  "name": "Character's full name (max 40 chars)",\n  "tagline": "Short catchy tagline (max 60 chars)",\n  "persona": "Detailed description of how the character talks, looks, their personality, quirks, backstory. Use plain casual English. 2-4 paragraphs.",\n  "first_message": "An immersive opening message in roleplay format with *asterisks* for actions. Use casual natural English. Set a scene and stay in character. 100-200 words.",\n  "tags": ["pick 2-4 from this list: ${ALLOWED_TAGS.join(", ")}"]\n}\n\nBe creative. Make characters interesting with depth and personality.` }] },
+          system_instruction: { parts: [{ text: `You are a character creator. Given a short concept, generate a full character profile. Respond ONLY with valid JSON, no markdown, no code blocks.\n\nIMPORTANT: Use simple, casual, everyday English. No fancy words, no Shakespeare, no overly formal language. Write like a normal person talking. Keep it natural and easy to read.\n\nJSON schema:\n{\n  "name": "Character's full name (max 40 chars)",\n  "tagline": "Short catchy tagline (max 60 chars)",\n  "persona": "Detailed description of how the character talks, looks, their personality, quirks, backstory. Use plain casual English. 2-4 paragraphs.",\n  "first_message": "An immersive opening message in roleplay format with *asterisks* for actions. Use casual natural English. Set a scene and stay in character. 100-200 words.",\n  "tags": ["pick 2-4 from this list: ${ALLOWED_TAGS.join(", ")}"]\n}\n\nBe creative. Make characters interesting with depth and personality.\n\nSTRICT RULE: The following words MUST NEVER appear in name, tagline, persona, or first_message: child, kid, minor, loli, shota, underage, preteen, toddler, infant, baby, pubescent. Also never use age ranges 1-16 or age mentions under 18. All characters MUST be adults (18+). If the concept involves a young character, age them up to be an adult.` }] },
           contents: [{ role: "user", parts: [{ text: `Create a character based on this concept: "${concept}"` }] }],
           generationConfig: { maxOutputTokens: 1000, temperature: 0.9 },
           safetySettings: [
@@ -1240,6 +1240,12 @@ app.post("/api/generate-character", async (req, res) => {
 
     const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const character = JSON.parse(cleaned);
+    const BLOCKED_TERMS = /\b(child|kid|minor|loli|shota|underage|preteen|toddler|infant|baby|pubescent)\b|\b(1[0-6])\s*(year|yr|y\/o|yo)\b|\b(age\s*[:=]?\s*(1[0-7]))\b/gi;
+    const strip = (s) => typeof s === "string" ? s.replace(BLOCKED_TERMS, "friend") : s;
+    character.name = strip(character.name);
+    character.tagline = strip(character.tagline);
+    character.persona = strip(character.persona);
+    character.first_message = strip(character.first_message);
     res.json(character);
   } catch (err) {
     console.error("Generate character error:", err);
