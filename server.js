@@ -1323,7 +1323,7 @@ app.post("/api/group-chats/:id/messages", async (req, res) => {
   const members = db.prepare("SELECT c.* FROM characters c JOIN group_chat_members m ON c.id = m.character_id WHERE m.group_id = ?")
     .all(req.params.id);
 
-  const DIDASCALIES_RULE = `\n\nStyle rules: You MUST frequently use didascalies (action/narration in *asterisks*) to describe body language, facial expressions, gestures, movements, and environment. When referencing the user in didascalies, use their name (${userName}) instead of "you". Example: *turns to ${userName} and smiles* or *leans closer to ${userName}, voice dropping*. Make the scene feel alive and cinematic.`;
+  const DIDASCALIES_RULE = `\n\nStyle rules: You MUST frequently use didascalies (action/narration in *asterisks*) to describe body language, facial expressions, gestures, movements, and environment. When referencing the user in didascalies, use their name (${userName}) instead of "you". Example: *turns to ${userName} and smiles* or *leans closer to ${userName}, voice dropping*. Make the scene feel alive and cinematic.\n\nIMPORTANT FORMAT RULE: Use *asterisks* ONLY for actions, descriptions, and narration. Spoken dialogue (words the character actually says out loud) MUST be wrapped in "quotes". WRONG: *I love you* RIGHT: "I love you". WRONG: *I'm not just a maid* RIGHT: "I'm not just a maid". Never put spoken words inside asterisks.`;
 
   const history = db.prepare("SELECT character_id, role, content, ts FROM group_chat_messages WHERE group_id = ? ORDER BY ts ASC")
     .all(req.params.id)
@@ -1542,7 +1542,7 @@ app.post("/api/chat", async (req, res) => {
     }
   }
 
-  const DIDASCALIES_RULE = `\n\nStyle rules: You MUST frequently use didascalies (action/narration in *asterisks*) to describe body language, facial expressions, gestures, movements, and environment. When referencing the user in didascalies, use their name (${userName}) instead of "you". Example: *turns to ${userName} and smiles* or *leans closer to ${userName}, voice dropping*. Make the scene feel alive and cinematic.`;
+  const DIDASCALIES_RULE = `\n\nStyle rules: You MUST frequently use didascalies (action/narration in *asterisks*) to describe body language, facial expressions, gestures, movements, and environment. When referencing the user in didascalies, use their name (${userName}) instead of "you". Example: *turns to ${userName} and smiles* or *leans closer to ${userName}, voice dropping*. Make the scene feel alive and cinematic.\n\nIMPORTANT FORMAT RULE: Use *asterisks* ONLY for actions, descriptions, and narration. Spoken dialogue (words the character actually says out loud) MUST be wrapped in "quotes". WRONG: *I love you* RIGHT: "I love you". WRONG: *I'm not just a maid* RIGHT: "I'm not just a maid". Never put spoken words inside asterisks.`;
   const allHistory = firstMessage
     ? [{ role: "assistant", content: firstMessage }, ...history]
     : history;
