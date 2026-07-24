@@ -1413,6 +1413,8 @@ function renderFilterPagination(totalPages) {
       currentPage = pageNum;
       runFilteredGallery();
       renderFilterPagination(Math.ceil(getFilteredCharacters().length / 12));
+      document.getElementById("gallery").scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("gallery").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     container.appendChild(btn);
   }
