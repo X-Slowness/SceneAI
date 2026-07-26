@@ -361,12 +361,22 @@ function resetQuestCounters(userId, sub) {
     updates.daily_likes = 0;
     updates.daily_streak_claimed = 0;
     updates.daily_reset_date = today;
+    const dailyIds = QUESTS.filter(q => q.category === "daily").map(q => q.id);
+    if (dailyIds.length > 0) {
+      const ph = dailyIds.map(() => "?").join(",");
+      db.prepare(`DELETE FROM claimed_quests WHERE user_id = ? AND quest_id IN (${ph})`).run(userId, ...dailyIds);
+    }
   }
   if (sub.weekly_reset_date !== weekStart) {
     updates.weekly_msg_count = 0;
     updates.weekly_chars_chatted = "[]";
     updates.weekly_likes = 0;
     updates.weekly_reset_date = weekStart;
+    const weeklyIds = QUESTS.filter(q => q.category === "weekly").map(q => q.id);
+    if (weeklyIds.length > 0) {
+      const ph = weeklyIds.map(() => "?").join(",");
+      db.prepare(`DELETE FROM claimed_quests WHERE user_id = ? AND quest_id IN (${ph})`).run(userId, ...weeklyIds);
+    }
   }
   if (Object.keys(updates).length > 0) {
     const setClauses = Object.keys(updates).map(k => `${k} = ?`).join(", ");
