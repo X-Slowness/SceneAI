@@ -359,7 +359,6 @@ function resetQuestCounters(userId, sub) {
     updates.daily_msg_count = 0;
     updates.daily_chars_chatted = "[]";
     updates.daily_likes = 0;
-    updates.daily_streak_claimed = 0;
     updates.daily_reset_date = today;
     const dailyIds = QUESTS.filter(q => q.category === "daily").map(q => q.id);
     if (dailyIds.length > 0) {
@@ -428,12 +427,15 @@ function getQuestProgress(userId) {
   if (!sub) return [];
   sub = resetQuestCounters(userId, sub);
   const claimed = db.prepare("SELECT quest_id FROM claimed_quests WHERE user_id = ?").all(userId).map(r => r.quest_id);
+  const today = getLocalDate(sub.timezone_offset || 0);
   return QUESTS.map(q => {
     let progress = 0;
     if (q.field === "daily_chars_chatted") {
       progress = JSON.parse(sub.daily_chars_chatted || "[]").length;
     } else if (q.field === "weekly_chars_chatted") {
       progress = JSON.parse(sub.weekly_chars_chatted || "[]").length;
+    } else if (q.field === "daily_streak_claimed") {
+      progress = (sub.last_claim_date === today) ? 1 : 0;
     } else {
       progress = sub[q.field] || 0;
     }
@@ -466,9 +468,11 @@ app.post("/api/quests/:id/claim", (req, res) => {
   let sub = db.prepare("SELECT * FROM subscriptions WHERE user_id = ?").get(userId);
   if (!sub) return res.status(400).json({ error: "No subscription row." });
   sub = resetQuestCounters(userId, sub);
+  const today = getLocalDate(sub.timezone_offset || 0);
   let progress = 0;
   if (quest.field === "daily_chars_chatted") progress = JSON.parse(sub.daily_chars_chatted || "[]").length;
   else if (quest.field === "weekly_chars_chatted") progress = JSON.parse(sub.weekly_chars_chatted || "[]").length;
+  else if (quest.field === "daily_streak_claimed") progress = (sub.last_claim_date === today) ? 1 : 0;
   else progress = sub[quest.field] || 0;
   if (progress < quest.target) return res.status(400).json({ error: "Quest not complete." });
   db.prepare("INSERT INTO claimed_quests (user_id, quest_id, claimed_at) VALUES (?, ?, ?)").run(userId, quest.id, Date.now());
@@ -870,8 +874,8 @@ app.post("/api/daily-reward/claim", (req, res) => {
     }
   }
   const reward = DAILY_REWARDS[nextDay] || 50;
-  db.prepare("UPDATE subscriptions SET coins = coins + ?, streak_day = ?, last_claim_date = ?, daily_streak_claimed = 1, daily_reset_date = ? WHERE user_id = ?")
-    .run(reward, nextDay, today, today, userId);
+  db.prepare("UPDATE subscriptions SET coins = coins + ?, streak_day = ?, last_claim_date = ? WHERE user_id = ?")
+    .run(reward, nextDay, today, userId);
   saveBackup();
   const updated = db.prepare("SELECT coins, streak_day FROM subscriptions WHERE user_id = ?").get(userId);
   res.json({ ok: true, streak_day: nextDay, reward, total_coins: updated.coins });
