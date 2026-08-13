@@ -1778,10 +1778,15 @@ async function openChat(id) {
   savedGalleryScroll = document.querySelector(".main-content").scrollTop;
   galleryView.hidden = true;
   recentChatsView.hidden = true;
+  favoritesView.hidden = true;
+  trendingView.hidden = true;
+  mostLikedView.hidden = true;
   myCharactersView.hidden = true;
   questsView.hidden = true;
   meView.hidden = true;
   publicProfileView.hidden = true;
+  groupChatView.hidden = true;
+  groupChatsView.hidden = true;
   chatView.hidden = false;
   document.querySelector(".app").classList.add("chat-active");
   if (activeChatTheme === "galaxy") injectGalaxyStars();
