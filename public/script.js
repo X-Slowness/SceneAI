@@ -2923,8 +2923,17 @@ async function openGroupChat(groupId) {
     img.src = avatarSrc(m);
     groupChatAvatarsEl.appendChild(img);
   });
-  groupChatsView.hidden = true;
+  galleryView.hidden = true;
+  recentChatsView.hidden = true;
+  favoritesView.hidden = true;
+  trendingView.hidden = true;
+  mostLikedView.hidden = true;
+  myCharactersView.hidden = true;
+  questsView.hidden = true;
+  meView.hidden = true;
   publicProfileView.hidden = true;
+  groupChatsView.hidden = true;
+  chatView.hidden = true;
   groupChatView.hidden = false;
   setTab(null);
   const msgs = await loadGroupChatMessages(groupId);
