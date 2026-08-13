@@ -315,6 +315,14 @@ db.exec(`CREATE TABLE IF NOT EXISTS claimed_quests (
   PRIMARY KEY (user_id, quest_id)
 )`);
 
+// One-time cleanup: clear stale daily/weekly quest claims from before the reset fix
+try {
+  const DAY = 86400000;
+  db.exec(`DELETE FROM claimed_quests WHERE quest_id IN ('daily_3_chats','daily_10_msgs','daily_2_likes','daily_streak') AND claimed_at < ${Date.now() - DAY}`);
+  db.exec(`DELETE FROM claimed_quests WHERE quest_id IN ('weekly_15_chats','weekly_75_msgs','weekly_10_likes') AND claimed_at < ${Date.now() - 7 * DAY}`);
+  console.log("Cleared stale daily/weekly quest claims.");
+} catch(e) { console.log("Quest cleanup skipped:", e.message); }
+
 const QUESTS = [
   { id: "daily_3_chats", category: "daily", name: "Social Butterfly", desc: "Chat with 3 different characters", target: 3, field: "daily_chars_chatted", reward: 50 },
   { id: "daily_10_msgs", category: "daily", name: "Chatterbox", desc: "Send 10 messages", target: 10, field: "daily_msg_count", reward: 40 },
