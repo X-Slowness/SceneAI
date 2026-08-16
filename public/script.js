@@ -1789,6 +1789,8 @@ async function openChat(id) {
   groupChatsView.hidden = true;
   chatView.hidden = false;
   document.querySelector(".app").classList.add("chat-active");
+  const mc = document.querySelector(".main-content");
+  mc.scrollTop = 0;
   if (activeChatTheme === "galaxy") injectGalaxyStars();
   currentMessages = await loadMessages(id);
   renderMessages();

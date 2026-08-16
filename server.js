@@ -180,6 +180,14 @@ console.log("Backup path:", BACKUP_PATH);
 const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 
+// Admin: download the current backup JSON (for migrating off Railway before the account expires)
+app.get("/api/backup/download", requireAdmin, (req, res) => {
+  if (!fs.existsSync(BACKUP_PATH)) return res.status(404).json({ error: "Backup not found." });
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Content-Disposition", `attachment; filename="sceneai_backup_${new Date().toISOString().slice(0, 10)}.json"`);
+  res.sendFile(BACKUP_PATH);
+});
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS characters (
     id TEXT PRIMARY KEY,
@@ -1345,6 +1353,11 @@ app.post("/api/group-chats/:id/messages", async (req, res) => {
   const members = db.prepare("SELECT c.* FROM characters c JOIN group_chat_members m ON c.id = m.character_id WHERE m.group_id = ?")
     .all(req.params.id);
 
+  const sub = db.prepare("SELECT user_name, user_gender, user_info FROM subscriptions WHERE user_id = ?").get(userId);
+  const userName = (sub?.user_name || username || "User").trim();
+  const userGender = sub?.user_gender || '';
+  const userInfo = sub?.user_info || '';
+
   const DIDASCALIES_RULE = `\n\nStyle rules: You MUST frequently use didascalies (action/narration in *asterisks*) to describe body language, facial expressions, gestures, movements, and environment. When referencing the user in didascalies, use their name (${userName}) instead of "you". Example: *turns to ${userName} and smiles* or *leans closer to ${userName}, voice dropping*. Make the scene feel alive and cinematic.\n\nIMPORTANT FORMAT RULE: Use *asterisks* ONLY for actions, descriptions, and narration. Spoken dialogue (words the character actually says out loud) MUST be wrapped in "quotes". WRONG: *I love you* RIGHT: "I love you". WRONG: *I'm not just a maid* RIGHT: "I'm not just a maid". Never put spoken words inside asterisks.`;
 
   const history = db.prepare("SELECT character_id, role, content, ts FROM group_chat_messages WHERE group_id = ? ORDER BY ts ASC")
@@ -1357,10 +1370,6 @@ app.post("/api/group-chats/:id/messages", async (req, res) => {
       return { role: "model", parts: [{ text: `[${name}]: ${m.content}` }] };
     });
 
-  const sub = db.prepare("SELECT user_name, user_gender, user_info FROM subscriptions WHERE user_id = ?").get(userId);
-  const userName = (sub?.user_name || username || "User").trim();
-  const userGender = sub?.user_gender || '';
-  const userInfo = sub?.user_info || '';
   const charList = members.map(c => `- ${c.name}: ${c.persona}`).join("\n");
   const systemPrompt = `You are voicing multiple characters in a group conversation. Each character has their own personality and speaking style. When a character speaks, prefix their dialogue with [CharacterName]:. Do NOT use [CharacterName]: for the user. The user's real name is "${userName}".${userGender ? ` Their gender is ${userGender}.` : ''}${userInfo ? ` About the user: ${userInfo}.` : ''} Use their name and details naturally if it comes up in conversation, but don't start every message with it or force it in.
 
@@ -1516,6 +1525,7 @@ app.post("/api/users/:userId/clear-history", (req, res) => {
 // ── Delete all data for a user (account deletion) ────────
 app.delete("/api/users/:userId/messages", (req, res) => {
   const userId = req.params.userId;
+  if (req.headers["x-user-id"] !== userId) return res.status(403).json({ error: "Not authorized." });
   db.prepare("DELETE FROM messages WHERE user_id = ?").run(userId);
   db.prepare("DELETE FROM favorites WHERE user_id = ?").run(userId);
   db.prepare("DELETE FROM likes WHERE user_id = ?").run(userId);
